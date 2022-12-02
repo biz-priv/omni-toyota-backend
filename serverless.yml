@@ -68,3 +68,7 @@ layers:
 
 functions:
   toyotaUpdates: ${file(config/functions/toyotaUpdates.yml):function}
+
+resources:
+  Resources:
+    ToyotaDynamoTable: ${file(config/dynamoDB/toyota.yaml):ToyotaDynamoTable}

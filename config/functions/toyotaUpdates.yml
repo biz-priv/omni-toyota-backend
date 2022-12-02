@@ -4,8 +4,8 @@ function:
   handler: src/toyotaUpdates.handler
   memorySize: 1024
   timeout: 90
-  # provisionedConcurrency: 1
-  # concurrencyAutoscaling: true
+  provisionedConcurrency: 1 # default setting have Concurrency of main:-1 to max:-10
+  concurrencyAutoscaling: true
   layers:
     - { Ref: OmniToyotaLayerLambdaLayer }
   package:

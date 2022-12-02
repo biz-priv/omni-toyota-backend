@@ -9,7 +9,6 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "@fast-csv/parse": "^4.3.6",
     "aws-sdk": "^2.1163.0",
     "lodash": "^4.17.21",
     "lodash.get": "^4.4.2",
