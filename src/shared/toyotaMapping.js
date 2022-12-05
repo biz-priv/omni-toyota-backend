@@ -3,7 +3,6 @@ function getToyotaResonCodeDetails(FDCode) {
     return toyotaResonCodeMapping[toyotaMappingData[FDCode].toyotaCode];
   } catch (e) {
     console.log("e:toyotaMapping", e);
-    // throw "Failed mapping";
     return {};
   }
 }

@@ -2,10 +2,8 @@
 function:
   name: omni-toyota-updates-${self:provider.stage}
   handler: src/toyotaUpdates.handler
-  memorySize: 1024
-  timeout: 90
-  provisionedConcurrency: 1 # default setting have Concurrency of main:-1 to max:-10
-  concurrencyAutoscaling: true
+  # provisionedConcurrency: 1
+  # concurrencyAutoscaling: true
   layers:
     - { Ref: OmniToyotaLayerLambdaLayer }
   package:
@@ -13,17 +11,7 @@ function:
       - "!**/*"
       - "src/toyotaUpdates.js"
       - "src/shared/**"
-  environment:
-    APAR_FAILURE_TABLE: ${ssm:/omni-wt-rt-updates/${self:provider.stage}/apar-failure/ddb.tableName~true}
-    CONSIGNEE_TABLE: ${ssm:/omni-wt-rt-updates/${self:provider.stage}/consignee/ddb.tableName~true}
-    REFERENCES_TABLE: ${ssm:/omni-wt-rt-updates/${self:provider.stage}/references/ddb.tableName~true}
-    SHIPMENT_APAR_TABLE: ${ssm:/omni-wt-rt-updates/${self:provider.stage}/shipment-apar/ddb.tableName~true}
-    SHIPMENT_HEADER_TABLE: ${ssm:/omni-wt-rt-updates/${self:provider.stage}/shipment-header/ddb.tableName~true}
-    SHIPMENT_MILESTONE_TABLE: ${ssm:/omni-wt-rt-updates/${self:provider.stage}/shipment-milestone/ddb.tableName~true}
-    SHIPPER_TABLE: ${ssm:/omni-wt-rt-updates/${self:provider.stage}/shipper/ddb.tableName~true}
   events:
-    - sqs:
-        # arn: ${ssm:/omni-wt-rt-updates/${self:provider.stage}/toyota/sqs.arn~true}
-        arn: arn:aws:sqs:us-east-1:332281781429:omni-rt-toyota-dev
-        batchSize: 10
-        functionResponseType: ReportBatchItemFailures
+    # - stream: ${ssm:/omni-rt-toyota/${self:provider.stage}/ddb.streamArn~true}
+  environment:
+    # DYNAMO_DB_TABLE: ${ssm:/omni-rt-toyota/${self:provider.stage}/apar-failure/ddb.tableName~true}
