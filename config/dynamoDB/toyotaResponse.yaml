@@ -1,0 +1,17 @@
+ToyotaResponseDynamoTable:
+  Type: AWS::DynamoDB::Table
+  Properties:
+    TableName: omni-rt-toyota-response-${self:provider.stage}
+    BillingMode: PAY_PER_REQUEST
+    AttributeDefinitions:
+      - AttributeName: "loadId"
+        AttributeType: "S"
+      - AttributeName: "SeqNo"
+        AttributeType: "S"
+    KeySchema:
+      - AttributeName: "loadId"
+        KeyType: HASH
+      - AttributeName: "SeqNo"
+        KeyType: RANGE
+    StreamSpecification:
+      StreamViewType: NEW_AND_OLD_IMAGES
