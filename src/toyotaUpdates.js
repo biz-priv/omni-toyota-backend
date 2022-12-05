@@ -25,7 +25,7 @@ module.exports.handler = async (event, context, callback) => {
     const toyotaRes = await toyotaSendUpdate(payload);
     console.log("toyotaRes", toyotaRes);
     const resPayload = {
-      ...streamRecord,
+      ...streamRecords,
       ...toyotaRes,
       InsertedTimeStamp: moment
         .tz("America/Chicago")
