@@ -13,5 +13,6 @@ function:
       - "src/shared/**"
   events:
     # - stream: ${ssm:/omni-rt-toyota/${self:provider.stage}/ddb.streamArn~true}
+    - stream: arn:aws:dynamodb:us-east-1:332281781429:table/omni-rt-toyota-dev/stream/2022-12-05T14:09:42.128
   environment:
-    # DYNAMO_DB_TABLE: ${ssm:/omni-rt-toyota/${self:provider.stage}/apar-failure/ddb.tableName~true}
+    # DYNAMO_DB_TABLE: ${ssm:/omni-rt-toyota-response/${self:provider.stage}/ddb.tableName~true}

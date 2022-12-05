@@ -9,104 +9,15 @@ const { putItem } = require("./shared/dynamo");
 const TOYOTA_CLIENT_ID = "a4eb2f67-3a28-450f-8af5-ae962f123d90";
 const TOYOTA_JWT_URL = "https://d1h9vb8y1s0f1d.cloudfront.net/api/JWT";
 const TOYOTA_URL = "https://ddvyfwjl3479f.cloudfront.net/api/ShipmentPost";
-const TOYOTA_RESPONSE_DDB = "omni-rt-toyota-response-test";
+const TOYOTA_RESPONSE_DDB = "omni-rt-toyota-response-dev";
 
 module.exports.handler = async (event, context, callback) => {
   try {
     console.log("event", JSON.stringify(event));
-    // const streamRecords = AWS.DynamoDB.Converter.unmarshall(event.Records[0].dynamodb.NewImage);
-    // const payload = [streamRecord];
-    const streamRecord = AWS.DynamoDB.Converter.unmarshall({
-      loadId: {
-        S: "4519743",
-      },
-      SeqNo: {
-        S: "1",
-      },
-      appointmentEndTime: {
-        S: "2023-02-02 14:00:00.000",
-      },
-      appointmentStartTime: {
-        S: "2023-02-02 12:00:00.000",
-      },
-      billOfLading: {
-        S: "8160273",
-      },
-      carrierOrderNo: {
-        S: "",
-      },
-      containerNo: {
-        S: "",
-      },
-      destinationAddress: {
-        S: "651W57THST",
-      },
-      destinationCity: {
-        S: "NEWNEWYORK",
-      },
-      destinationFacility: {
-        S: "4519743",
-      },
-      destinationState: {
-        S: "NY",
-      },
-      destinationZip: {
-        S: "10019",
-      },
-      eta: {
-        S: "1900-01-01 00:00:00.000",
-      },
-      event: {
-        S: "",
-      },
-      eventtimestamp: {
-        S: "",
-      },
-      gpslat: {
-        S: "",
-      },
-      gpslong: {
-        S: "",
-      },
-      InsertedTimeStamp: {
-        S: "2022:12:03 13:47:12",
-      },
-      originAddress: {
-        S: "2423 PLEASANT RD",
-      },
-      originCity: {
-        S: "SOMEPLACE",
-      },
-      originFacility: {
-        S: "4519743",
-      },
-      originState: {
-        S: "GA",
-      },
-      originZip: {
-        S: "31234",
-      },
-      reasoncode: {
-        S: "",
-      },
-      reasondescription: {
-        S: "",
-      },
-      scac: {
-        S: "OMNG",
-      },
-      sequenceNumber: {
-        S: "",
-      },
-      timeZone: {
-        S: "",
-      },
-      transportationMode: {
-        S: "",
-      },
-    });
-
-    const payload = [Object.assign({}, streamRecord)];
+    const streamRecords = AWS.DynamoDB.Converter.unmarshall(
+      event.Records[0].dynamodb.NewImage
+    );
+    const payload = [Object.assign({}, streamRecords)];
     delete payload[0].InsertedTimeStamp;
     delete payload[0].SeqNo;
 

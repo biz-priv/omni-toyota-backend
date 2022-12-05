@@ -17,34 +17,34 @@ const SHIPMENT_MILESTONE_TABLE = process.env.SHIPMENT_MILESTONE_TABLE;
 const SHIPPER_TABLE = process.env.SHIPPER_TABLE;
 const REFERENCES_INDEX_KEY_NAME = process.env.REFERENCES_INDEX_KEY_NAME;
 // const TOYOTA_DDB = process.env.TOYOTA_DDB;
-const TOYOTA_DDB = "omni-toyota-test";
+const TOYOTA_DDB = "omni-rt-toyota-dev";
 // const REFERENCES_INDEX_KEY_NAME = "omni-wt-rt-ref-orderNo-index-dev";
 
 module.exports.handler = async (event, context, callback) => {
   let sqsEventRecords = [];
   try {
     console.log("event", JSON.stringify(event));
-    // sqsEventRecords = event.Records;
-    sqsEventRecords = [
-      {
-        body: {
-          ApproximateCreationDateTime: 1669855115,
-          Keys: { PK_ReferenceNo: { S: "12229973" } },
-          NewImage: {
-            FK_OrderNo: { S: "4519743" },
-            InsertedTimeStamp: { S: "2022:11:30 18:38:35" },
-            PK_ReferenceNo: { S: "12229973" },
-            FK_RefTypeId: { S: "REF" },
-            CustomerType: { S: "B" },
-            ReferenceNo: { S: "DEF456" },
-          },
-          SequenceNumber: "43476800000000022460830226",
-          SizeBytes: 142,
-          StreamViewType: "NEW_AND_OLD_IMAGES",
-          dynamoTableName: "omni-wt-rt-references-dev",
-        },
-      },
-    ];
+    sqsEventRecords = event.Records;
+    // sqsEventRecords = [
+    //   {
+    //     body: {
+    //       ApproximateCreationDateTime: 1669855115,
+    //       Keys: { PK_ReferenceNo: { S: "12229973" } },
+    //       NewImage: {
+    //         FK_OrderNo: { S: "4519743" },
+    //         InsertedTimeStamp: { S: "2022:11:30 18:38:35" },
+    //         PK_ReferenceNo: { S: "12229973" },
+    //         FK_RefTypeId: { S: "REF" },
+    //         CustomerType: { S: "B" },
+    //         ReferenceNo: { S: "DEF456" },
+    //       },
+    //       SequenceNumber: "43476800000000022460830226",
+    //       SizeBytes: 142,
+    //       StreamViewType: "NEW_AND_OLD_IMAGES",
+    //       dynamoTableName: "omni-wt-rt-references-dev",
+    //     },
+    //   },
+    // ];
     const faildSqsItemList = [];
 
     for (let index = 0; index < sqsEventRecords.length; index++) {
