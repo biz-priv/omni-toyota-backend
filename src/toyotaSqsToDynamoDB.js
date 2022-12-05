@@ -25,33 +25,12 @@ module.exports.handler = async (event, context, callback) => {
   try {
     console.log("event", JSON.stringify(event));
     sqsEventRecords = event.Records;
-    // sqsEventRecords = [
-    //   {
-    //     body: {
-    //       ApproximateCreationDateTime: 1669855115,
-    //       Keys: { PK_ReferenceNo: { S: "12229973" } },
-    //       NewImage: {
-    //         FK_OrderNo: { S: "4519743" },
-    //         InsertedTimeStamp: { S: "2022:11:30 18:38:35" },
-    //         PK_ReferenceNo: { S: "12229973" },
-    //         FK_RefTypeId: { S: "REF" },
-    //         CustomerType: { S: "B" },
-    //         ReferenceNo: { S: "DEF456" },
-    //       },
-    //       SequenceNumber: "43476800000000022460830226",
-    //       SizeBytes: 142,
-    //       StreamViewType: "NEW_AND_OLD_IMAGES",
-    //       dynamoTableName: "omni-wt-rt-references-dev",
-    //     },
-    //   },
-    // ];
     const faildSqsItemList = [];
 
     for (let index = 0; index < sqsEventRecords.length; index++) {
       const sqsItem = sqsEventRecords[index];
       try {
-        // dynamoData = JSON.parse(sqsItem.body);
-        const dynamoData = sqsItem.body;
+        const dynamoData = JSON.parse(sqsItem.body);
         console.log("dynamoData", dynamoData);
 
         //get the primary key
@@ -62,8 +41,7 @@ module.exports.handler = async (event, context, callback) => {
 
         //check from shipment header if it is a toyota event
         const shipmentHeaderData = await getItem(SHIPMENT_HEADER_TABLE, {
-          // [tableList[SHIPMENT_HEADER_TABLE].PK]: primaryKeyValue,
-          [tableList[SHIPMENT_HEADER_TABLE].PK]: "4179211",
+          [tableList[SHIPMENT_HEADER_TABLE].PK]: primaryKeyValue,
         });
         console.log("shipmentHeaderData", shipmentHeaderData);
 
