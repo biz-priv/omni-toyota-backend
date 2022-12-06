@@ -5,6 +5,7 @@ const {
   queryWithPartitionKey,
   queryWithIndex,
   putItem,
+  updateItem,
 } = require("./shared/dynamo");
 const { getToyotaResonCodeDetails } = require("./shared/toyotaMapping");
 
@@ -52,21 +53,57 @@ module.exports.handler = async (event, context, callback) => {
         ) {
           //get data from all the requied tables
           const dataSet = await fetchDataFromTables(tableList, primaryKeyValue);
-          // console.log("dataSet", dataSet);
 
           //prepare the payload
           const toyotaObj = mapToyotaData(dataSet);
           console.log("toyotaObj", toyotaObj);
 
-          //save to dynamo DB
           const getToyotaData = await queryWithPartitionKey(TOYOTA_DDB, {
             loadId: toyotaObj.loadId,
           });
           let SeqNo = 1;
           if (getToyotaData.Items && getToyotaData.Items.length > 0) {
-            SeqNo += getToyotaData.Items.length;
+            const { latestObj, isDiff } = getDiff(
+              getToyotaData.Items,
+              toyotaObj
+            );
+            if (isDiff) {
+              SeqNo += getToyotaData.Items.length;
+              await putItem(TOYOTA_DDB, {
+                ...toyotaObj,
+                SeqNo: SeqNo.toString(),
+              });
+              //update all other records with
+              if (
+                latestObj.carrierOrderNo.length === 0 &&
+                toyotaObj.carrierOrderNo.length > 0
+              ) {
+                for (
+                  let index = 0;
+                  index < getToyotaData.Items.length;
+                  index++
+                ) {
+                  const e = getToyotaData.Items[index];
+                  await updateItem(
+                    TOYOTA_DDB,
+                    {
+                      loadId: e.loadId,
+                      SeqNo: e.SeqNo,
+                    },
+                    {
+                      ...e,
+                      carrierOrderNo: toyotaObj.carrierOrderNo,
+                    }
+                  );
+                }
+              }
+            }
+          } else {
+            await putItem(TOYOTA_DDB, {
+              ...toyotaObj,
+              SeqNo: SeqNo.toString(),
+            });
           }
-          await putItem(TOYOTA_DDB, { ...toyotaObj, SeqNo: SeqNo.toString() });
         }
       } catch (error) {
         console.log("error", error);
@@ -187,16 +224,16 @@ function mapToyotaData(dataSet) {
   const shipper = dataSet.shipper.length > 0 ? dataSet.shipper[0] : {};
 
   const aparFailure = getLatestObjByTimeStamp(dataSet.aparFailure);
-  // const shipmentApar =
-  //   dataSet.shipmentApar.length > 0 ? dataSet.shipmentApar : {};
 
   const shipmentMilestone = getLatestObjByTimeStamp(dataSet.shipmentMilestone);
 
   const referencesTRL = getLatestObjByTimeStamp(
-    dataSet.references.filter((e) => e.PK_ReferenceNo == "TRL")
+    dataSet.references.filter((e) => e.FK_RefTypeId == "TRL")
   );
   const referencesLOA = getLatestObjByTimeStamp(
-    dataSet.references.filter((e) => e.PK_ReferenceNo == "LOA")
+    dataSet.references.filter(
+      (e) => e.FK_RefTypeId == "LOA" && e.CustomerType == "B"
+    )
   );
 
   const reasonCodeDetails = getToyotaResonCodeDetails(aparFailure?.FDCode);
@@ -204,8 +241,8 @@ function mapToyotaData(dataSet) {
   const toyotaPayload = {
     loadId: shipmentHeader.PK_OrderNo,
     scac: "OMNG", //hardcode
-    carrierOrderNo: referencesLOA?.FK_RefTypeId ?? "", //must have some value
-    containerNo: referencesTRL?.FK_RefTypeId ?? "",
+    carrierOrderNo: referencesLOA?.PK_ReferenceNo ?? "", //must have some value
+    containerNo: referencesTRL?.PK_ReferenceNo ?? "",
     billOfLading: shipmentHeader.Housebill,
 
     originFacility: shipper.FK_ShipOrderNo ?? "",
@@ -260,4 +297,34 @@ function getLatestObjByTimeStamp(data) {
   } else {
     return {};
   }
+}
+
+function getDiff(dataList, obj) {
+  let latestObj = Object.assign(
+    {},
+    dataList.sort((a, b) => b.SeqNo - a.SeqNo)[0]
+  );
+  delete latestObj["SeqNo"];
+  delete latestObj["InsertedTimeStamp"];
+  delete obj["InsertedTimeStamp"];
+  console.log(
+    JSON.stringify(sortObjKeys(latestObj)),
+    JSON.stringify(sortObjKeys(obj))
+  );
+  return {
+    latestObj,
+    isDiff: !(
+      JSON.stringify(sortObjKeys(latestObj)) ===
+      JSON.stringify(sortObjKeys(obj))
+    ),
+  };
+}
+
+function sortObjKeys(mainObj) {
+  return Object.keys(mainObj)
+    .sort()
+    .reduce((obj, key) => {
+      obj[key] = mainObj[key];
+      return obj;
+    }, {});
 }
