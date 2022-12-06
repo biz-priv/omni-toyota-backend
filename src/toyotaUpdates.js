@@ -3,13 +3,10 @@ const moment = require("moment-timezone");
 const axios = require("axios");
 const { putItem } = require("./shared/dynamo");
 
-// const TOYOTA_CLIENT_ID = process.env.TOYOTA_CLIENT_ID;
-// const TOYOTA_JWT_URL = process.env.TOYOTA_JWT_URL;
-// const TOYOTA_URL = process.env.TOYOTA_URL;
-const TOYOTA_CLIENT_ID = "a4eb2f67-3a28-450f-8af5-ae962f123d90";
-const TOYOTA_JWT_URL = "https://d1h9vb8y1s0f1d.cloudfront.net/api/JWT";
-const TOYOTA_URL = "https://ddvyfwjl3479f.cloudfront.net/api/ShipmentPost";
-const TOYOTA_RESPONSE_DDB = "omni-rt-toyota-response-dev";
+const TOYOTA_CLIENT_ID = process.env.TOYOTA_CLIENT_ID;
+const TOYOTA_JWT_URL = process.env.TOYOTA_JWT_URL;
+const TOYOTA_URL = process.env.TOYOTA_URL;
+const TOYOTA_RESPONSE_DDB = process.env.TOYOTA_RESPONSE_DDB;
 
 module.exports.handler = async (event, context, callback) => {
   try {
