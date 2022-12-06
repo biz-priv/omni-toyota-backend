@@ -17,9 +17,7 @@ const SHIPMENT_HEADER_TABLE = process.env.SHIPMENT_HEADER_TABLE;
 const SHIPMENT_MILESTONE_TABLE = process.env.SHIPMENT_MILESTONE_TABLE;
 const SHIPPER_TABLE = process.env.SHIPPER_TABLE;
 const REFERENCES_INDEX_KEY_NAME = process.env.REFERENCES_INDEX_KEY_NAME;
-// const TOYOTA_DDB = process.env.TOYOTA_DDB;
-const TOYOTA_DDB = "omni-rt-toyota-dev";
-// const REFERENCES_INDEX_KEY_NAME = "omni-wt-rt-ref-orderNo-index-dev";
+const TOYOTA_DDB = process.env.TOYOTA_DDB;
 
 module.exports.handler = async (event, context, callback) => {
   let sqsEventRecords = [];
