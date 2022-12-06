@@ -17,13 +17,14 @@ module.exports.handler = async (event, context, callback) => {
     const streamRecords = AWS.DynamoDB.Converter.unmarshall(
       event.Records[0].dynamodb.NewImage
     );
+    //check if carrierOrderNo have proper value or not
+    if (streamRecords.carrierOrderNo.length === 0) {
+      return {};
+    }
     const payload = [Object.assign({}, streamRecords)];
     delete payload[0].InsertedTimeStamp;
     delete payload[0].SeqNo;
-
-    console.log("payload", payload);
-    const toyotaRes = await toyotaSendUpdate(payload);
-    console.log("toyotaRes", toyotaRes);
+    const toyotaRes = await sendToyotaUpdate(payload);
     const resPayload = {
       ...streamRecords,
       ...toyotaRes,
@@ -32,7 +33,6 @@ module.exports.handler = async (event, context, callback) => {
         .format("YYYY:MM:DD HH:mm:ss")
         .toString(),
     };
-    console.log("resPayload", JSON.stringify(resPayload));
     await putItem(TOYOTA_RESPONSE_DDB, resPayload);
     return "success";
   } catch (error) {
@@ -72,7 +72,7 @@ function toyotaAuth() {
     }
   });
 }
-async function toyotaSendUpdate(payload) {
+async function sendToyotaUpdate(payload) {
   return new Promise(async (resolve, reject) => {
     try {
       const authData = await toyotaAuth();
@@ -106,7 +106,7 @@ async function toyotaSendUpdate(payload) {
           });
         });
     } catch (error) {
-      console.log("error:toyotaSendUpdate", error);
+      console.log("error:sendToyotaUpdate", error);
       resolve({
         toyotaRes: "toyota api error",
         status: "failed",
