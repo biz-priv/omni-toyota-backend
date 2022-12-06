@@ -18,4 +18,4 @@ function:
     TOYOTA_CLIENT_ID: ${ssm:/omni-rt-toyota/${self:provider.stage}/authApi.clientId~true}
     TOYOTA_JWT_URL: ${ssm:/omni-rt-toyota/${self:provider.stage}/authApi.url~true}
     TOYOTA_URL: ${ssm:/omni-rt-toyota/${self:provider.stage}/toyotaApi.url~true}
-    TOYOTA_RESPONSE_DDB: ${ssm:/omni-rt-toyota/${self:provider.stage}/ddb.streamArn~true}
+    TOYOTA_RESPONSE_DDB: ${ssm:/omni-rt-toyota/${self:provider.stage}/response/ddb.tableName~true}
