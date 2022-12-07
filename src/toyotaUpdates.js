@@ -34,7 +34,7 @@ module.exports.handler = async (event, context, callback) => {
         };
         await putItem(TOYOTA_RESPONSE_DDB, resPayload);
       } catch (error) {
-        console.error("Error", error);
+        console.error("Error:process", error);
       }
     }
     return "success";
