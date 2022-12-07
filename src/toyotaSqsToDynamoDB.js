@@ -298,22 +298,18 @@ function getLatestObjByTimeStamp(data) {
 }
 
 function getDiff(dataList, obj) {
-  let latestObj = Object.assign(
-    {},
-    dataList.sort((a, b) => b.SeqNo - a.SeqNo)[0]
-  );
+  let neObj = Object.create(obj);
+  let latestObj = Object.create(dataList.sort((a, b) => b.SeqNo - a.SeqNo)[0]);
+
   delete latestObj["SeqNo"];
   delete latestObj["InsertedTimeStamp"];
-  delete obj["InsertedTimeStamp"];
-  console.log(
-    JSON.stringify(sortObjKeys(latestObj)),
-    JSON.stringify(sortObjKeys(obj))
-  );
+  delete neObj["InsertedTimeStamp"];
+
   return {
     latestObj,
     isDiff: !(
       JSON.stringify(sortObjKeys(latestObj)) ===
-      JSON.stringify(sortObjKeys(obj))
+      JSON.stringify(sortObjKeys(neObj))
     ),
   };
 }
