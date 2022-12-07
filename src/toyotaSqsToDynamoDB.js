@@ -61,10 +61,9 @@ module.exports.handler = async (event, context, callback) => {
           });
           let SeqNo = 1;
           if (getToyotaData.Items && getToyotaData.Items.length > 0) {
-            const { latestObj, isDiff } = getDiff(
-              getToyotaData.Items,
-              toyotaObj
-            );
+            const { latestObj, isDiff } = getDiff([...getToyotaData.Items], {
+              ...toyotaObj,
+            });
             if (isDiff) {
               SeqNo += getToyotaData.Items.length;
               await putItem(TOYOTA_DDB, {
@@ -243,13 +242,13 @@ function mapToyotaData(dataSet) {
     containerNo: referencesTRL?.PK_ReferenceNo ?? "",
     billOfLading: shipmentHeader.Housebill,
 
-    originFacility: shipper.FK_ShipOrderNo ?? "",
+    originFacility: shipper.FK_ShipOrderNo ?? "", // TODO check with kiran
     originAddress: shipper.ShipAddress1 ?? "",
     originCity: shipper.ShipCity ?? "",
     originState: shipper.FK_ShipState ?? "",
     originZip: shipper.ShipZip ?? "",
 
-    destinationFacility: consignee?.FK_ConOrderNo ?? "",
+    destinationFacility: consignee?.FK_ConOrderNo ?? "", // TODO check with kiran
     destinationAddress: consignee?.ConAddress1 ?? "",
     destinationCity: consignee?.ConCity ?? "",
     destinationState: consignee?.FK_ConState ?? "",
@@ -298,18 +297,19 @@ function getLatestObjByTimeStamp(data) {
 }
 
 function getDiff(dataList, obj) {
-  let neObj = Object.create(obj);
-  let latestObj = Object.create(dataList.sort((a, b) => b.SeqNo - a.SeqNo)[0]);
-
+  let latestObj = Object.assign(
+    {},
+    dataList.sort((a, b) => b.SeqNo - a.SeqNo)[0]
+  );
   delete latestObj["SeqNo"];
   delete latestObj["InsertedTimeStamp"];
-  delete neObj["InsertedTimeStamp"];
+  delete obj["InsertedTimeStamp"];
 
   return {
     latestObj,
     isDiff: !(
       JSON.stringify(sortObjKeys(latestObj)) ===
-      JSON.stringify(sortObjKeys(neObj))
+      JSON.stringify(sortObjKeys(obj))
     ),
   };
 }
