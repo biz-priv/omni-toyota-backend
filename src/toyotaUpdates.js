@@ -11,26 +11,32 @@ const TOYOTA_RESPONSE_DDB = process.env.TOYOTA_RESPONSE_DDB;
 module.exports.handler = async (event, context, callback) => {
   try {
     console.log("event", JSON.stringify(event));
-    const streamRecords = AWS.DynamoDB.Converter.unmarshall(
-      event.Records[0].dynamodb.NewImage
-    );
-    //check if carrierOrderNo have proper value or not
-    if (streamRecords.carrierOrderNo.length === 0) {
-      return {};
+
+    for (let index = 0; index < event.Records.length; index++) {
+      const NewImage = event.Records[index].dynamodb.NewImage;
+      try {
+        const streamRecords = AWS.DynamoDB.Converter.unmarshall(NewImage);
+        //check if carrierOrderNo have proper value or not
+        if (streamRecords.carrierOrderNo.length === 0) {
+          return {};
+        }
+        const payload = [Object.assign({}, streamRecords)];
+        delete payload[0].InsertedTimeStamp;
+        delete payload[0].SeqNo;
+        const toyotaRes = await sendToyotaUpdate(payload);
+        const resPayload = {
+          ...streamRecords,
+          ...toyotaRes,
+          InsertedTimeStamp: moment
+            .tz("America/Chicago")
+            .format("YYYY:MM:DD HH:mm:ss")
+            .toString(),
+        };
+        await putItem(TOYOTA_RESPONSE_DDB, resPayload);
+      } catch (error) {
+        console.error("Error", error);
+      }
     }
-    const payload = [Object.assign({}, streamRecords)];
-    delete payload[0].InsertedTimeStamp;
-    delete payload[0].SeqNo;
-    const toyotaRes = await sendToyotaUpdate(payload);
-    const resPayload = {
-      ...streamRecords,
-      ...toyotaRes,
-      InsertedTimeStamp: moment
-        .tz("America/Chicago")
-        .format("YYYY:MM:DD HH:mm:ss")
-        .toString(),
-    };
-    await putItem(TOYOTA_RESPONSE_DDB, resPayload);
     return "success";
   } catch (error) {
     console.error("Error", error);
