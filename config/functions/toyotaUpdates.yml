@@ -2,7 +2,7 @@
 function:
   name: omni-toyota-updates-${self:provider.stage}
   handler: src/toyotaUpdates.handler
-  provisionedConcurrency: 1
+  provisionedConcurrency: 5
   concurrencyAutoscaling: true
   layers:
     - { Ref: OmniToyotaLayerLambdaLayer }
