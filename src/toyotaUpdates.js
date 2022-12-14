@@ -11,7 +11,7 @@ const TOYOTA_RESPONSE_DDB = process.env.TOYOTA_RESPONSE_DDB;
 module.exports.handler = async (event, context, callback) => {
   try {
     console.log("event", JSON.stringify(event));
-
+    // processing all the array of records
     for (let index = 0; index < event.Records.length; index++) {
       const NewImage = event.Records[index].dynamodb.NewImage;
       try {
@@ -23,6 +23,7 @@ module.exports.handler = async (event, context, callback) => {
         const payload = [Object.assign({}, streamRecords)];
         delete payload[0].InsertedTimeStamp;
         delete payload[0].SeqNo;
+        // send payload to toyota
         const toyotaRes = await sendToyotaUpdate(payload);
         const resPayload = {
           ...streamRecords,
@@ -32,6 +33,7 @@ module.exports.handler = async (event, context, callback) => {
             .format("YYYY:MM:DD HH:mm:ss")
             .toString(),
         };
+        // save toyota response
         await putItem(TOYOTA_RESPONSE_DDB, resPayload);
       } catch (error) {
         console.error("Error:process", error);
@@ -44,6 +46,10 @@ module.exports.handler = async (event, context, callback) => {
   }
 };
 
+/**
+ * token auth api to get token for main toyota api
+ * @returns
+ */
 function toyotaAuth() {
   return new Promise(async (resolve, reject) => {
     try {
@@ -75,6 +81,12 @@ function toyotaAuth() {
     }
   });
 }
+
+/**
+ * main toyota api
+ * @param {*} payload
+ * @returns
+ */
 async function sendToyotaUpdate(payload) {
   return new Promise(async (resolve, reject) => {
     try {
