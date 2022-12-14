@@ -103,6 +103,7 @@ module.exports.handler = async (event, context, callback) => {
               }
             }
           } else {
+            //save to dynamo DB
             await putItem(TOYOTA_DDB, {
               ...toyotaObj,
               SeqNo: SeqNo.toString(),
