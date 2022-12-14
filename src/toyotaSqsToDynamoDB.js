@@ -18,6 +18,7 @@ const SHIPMENT_MILESTONE_TABLE = process.env.SHIPMENT_MILESTONE_TABLE;
 const SHIPPER_TABLE = process.env.SHIPPER_TABLE;
 const REFERENCES_INDEX_KEY_NAME = process.env.REFERENCES_INDEX_KEY_NAME;
 const TOYOTA_DDB = process.env.TOYOTA_DDB;
+const TOYOTA_BILL_NO = process.env.TOYOTA_BILL_NO; //dev:- "22531"
 
 module.exports.handler = async (event, context, callback) => {
   let sqsEventRecords = [];
@@ -47,7 +48,7 @@ module.exports.handler = async (event, context, callback) => {
         if (
           shipmentHeaderData &&
           shipmentHeaderData.Item &&
-          shipmentHeaderData.Item.BillNo === "22531"
+          shipmentHeaderData.Item.BillNo === TOYOTA_BILL_NO
         ) {
           //get data from all the requied tables
           const dataSet = await fetchDataFromTables(tableList, primaryKeyValue);
@@ -56,6 +57,11 @@ module.exports.handler = async (event, context, callback) => {
           const toyotaObj = mapToyotaData(dataSet);
           console.log("toyotaObj", toyotaObj);
 
+          /**
+           * check if we have same payload on the toyota table then don't put the
+           * else increase the SeqNo and put the record to toyota table
+           * if carrierOrderNo is empty for previous records then update that also.
+           */
           const getToyotaData = await queryWithPartitionKey(TOYOTA_DDB, {
             loadId: toyotaObj.loadId,
           });
@@ -70,7 +76,8 @@ module.exports.handler = async (event, context, callback) => {
                 ...toyotaObj,
                 SeqNo: SeqNo.toString(),
               });
-              //update all other records with
+
+              //update all other records with carrierOrderNo
               if (
                 latestObj.carrierOrderNo.length === 0 &&
                 toyotaObj.carrierOrderNo.length > 0
@@ -96,6 +103,7 @@ module.exports.handler = async (event, context, callback) => {
               }
             }
           } else {
+            //save to dynamo DB
             await putItem(TOYOTA_DDB, {
               ...toyotaObj,
               SeqNo: SeqNo.toString(),
@@ -114,6 +122,12 @@ module.exports.handler = async (event, context, callback) => {
   }
 };
 
+/**
+ * get table list and initial primary key and sort key name
+ * @param {*} tableName
+ * @param {*} dynamoData
+ * @returns
+ */
 function getTablesAndPrimaryKey(tableName, dynamoData) {
   try {
     const tableList = {
@@ -177,6 +191,12 @@ function getTablesAndPrimaryKey(tableName, dynamoData) {
   }
 }
 
+/**
+ * fetch data from the tables
+ * @param {*} tableList
+ * @param {*} primaryKeyValue
+ * @returns
+ */
 async function fetchDataFromTables(tableList, primaryKeyValue) {
   try {
     const data = await Promise.all(
@@ -211,8 +231,12 @@ async function fetchDataFromTables(tableList, primaryKeyValue) {
   }
 }
 
+/**
+ * prepare toyota payload
+ * @param {*} dataSet
+ * @returns
+ */
 function mapToyotaData(dataSet) {
-  // console.log("dataSet", dataSet);
   // shipmentHeader,consignee,shipper always have one value
 
   const shipmentHeader =
@@ -278,6 +302,11 @@ function mapToyotaData(dataSet) {
   return toyotaPayload;
 }
 
+/**
+ * if we got multiple records from one table then we are taking the latest one.
+ * @param {*} data
+ * @returns
+ */
 function getLatestObjByTimeStamp(data) {
   if (data.length > 1) {
     return data.sort((a, b) => {
@@ -296,6 +325,12 @@ function getLatestObjByTimeStamp(data) {
   }
 }
 
+/**
+ * checking payload difference
+ * @param {*} dataList
+ * @param {*} obj
+ * @returns
+ */
 function getDiff(dataList, obj) {
   let latestObj = Object.assign(
     {},

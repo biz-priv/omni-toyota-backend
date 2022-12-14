@@ -4,7 +4,7 @@ function:
   handler: src/toyotaSqsToDynamoDB.handler
   memorySize: 1024
   timeout: 90
-  provisionedConcurrency: 5 # default setting have Concurrency of main:-1 to max:-10
+  provisionedConcurrency: 5
   concurrencyAutoscaling: true
   layers:
     - { Ref: OmniToyotaLayerLambdaLayer }
@@ -23,6 +23,7 @@ function:
     REFERENCES_TABLE: ${ssm:/omni-wt-rt-updates/${self:provider.stage}/references/ddb.tableName~true}
     REFERENCES_INDEX_KEY_NAME: ${ssm:/omni-wt-rt-updates/${self:provider.stage}/references/ddb.orderNoIndex}
     TOYOTA_DDB: ${ssm:/omni-rt-toyota/${self:provider.stage}/ddb.tableName~true}
+    TOYOTA_BILL_NO: ${ssm:/omni-wt-rt-updates/${self:provider.stage}/toyota/shipmentHeader/filterBillNo~true} #"22531"
   events:
     - sqs:
         arn: ${ssm:/omni-wt-rt-updates/${self:provider.stage}/toyota/sqs.arn~true}
