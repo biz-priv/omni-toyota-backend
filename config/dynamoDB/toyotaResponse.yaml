@@ -20,3 +20,5 @@ ToyotaResponseDynamoTable:
         KeySchema:
           - AttributeName: "InsertedTimeStamp"
             KeyType: "HASH"
+        Projection:
+          ProjectionType: "ALL"
