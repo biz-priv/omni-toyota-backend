@@ -8,8 +8,15 @@ ToyotaResponseDynamoTable:
         AttributeType: "S"
       - AttributeName: "SeqNo"
         AttributeType: "S"
+      - AttributeName: "InsertedTimeStamp"
+        AttributeType: "S"
     KeySchema:
       - AttributeName: "loadId"
         KeyType: HASH
       - AttributeName: "SeqNo"
         KeyType: RANGE
+    GlobalSecondaryIndexes:
+      - IndexName: omni-toyota-response-InsertedTimeStamp-index-${self:provider.stage}
+        KeySchema:
+          - AttributeName: "InsertedTimeStamp"
+            KeyType: "HASH"
