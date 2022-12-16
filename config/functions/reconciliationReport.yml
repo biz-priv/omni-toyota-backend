@@ -1,0 +1,23 @@
+---
+function:
+  name: omni-toyota-reconciliation-report-${self:provider.stage}
+  handler: src/reconciliationReport.handler
+  # provisionedConcurrency: 1
+  # concurrencyAutoscaling: true
+  layers:
+    - { Ref: OmniToyotaLayerLambdaLayer }
+  package:
+    patterns:
+      - "!**/*"
+      - "src/reconciliationReport.js"
+      - "src/shared/**"
+  # events:
+  #   - schedule:
+  #       rate: cron(0 6 * * ? *) # CST:- 12:00 AM IST:- 11:30 pm
+  environment:
+    TOYOTA_DDB: ${ssm:/omni-rt-toyota/${self:provider.stage}/ddb.tableName~true}
+    TOYOTA_CLIENT_ID: ${ssm:/omni-rt-toyota/${self:provider.stage}/authApi.clientId~true}
+    TOYOTA_JWT_URL: ${ssm:/omni-rt-toyota/${self:provider.stage}/authApi.url~true}
+    TOYOTA_URL: ${ssm:/omni-rt-toyota/${self:provider.stage}/toyotaApi.url~true}
+    TOYOTA_RESPONSE_DDB: ${ssm:/omni-rt-toyota/${self:provider.stage}/response/ddb.tableName~true}
+    STAGE: ${self:custom.stage}
