@@ -168,6 +168,10 @@ async function sendToyotaUpdate(payload) {
   });
 }
 
+/**
+ * date helper all times are in CST
+ * @returns
+ */
 function getDate() {
   const dateNow = moment.tz("America/Chicago");
   const dateToday = dateNow.format("YYYY-MM-DD HH:mm:ss").toString();
