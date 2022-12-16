@@ -25,17 +25,12 @@ module.exports.handler = async (event, context, callback) => {
         delete payload[0].SeqNo;
         // send payload to toyota
         const toyotaRes = await sendToyotaUpdate(payload);
+        const dateTime = moment.tz("America/Chicago");
         const resPayload = {
           ...streamRecords,
           ...toyotaRes,
-          InsertedTimeStamp: moment
-            .tz("America/Chicago")
-            .format("YYYY:MM:DD HH:mm:ss")
-            .toString(),
-          ConciliationTimeStamp: moment
-            .tz("America/Chicago")
-            .format("YYYY-MM-DDTHH:mm:ss")
-            .toString(),
+          InsertedTimeStamp: dateTime.format("YYYY:MM:DD HH:mm:ss").toString(),
+          ConciliationTimeStamp: dateTime.format("YYYYMMDD").toString(),
         };
         // save toyota response
         await putItem(TOYOTA_RESPONSE_DDB, resPayload);
