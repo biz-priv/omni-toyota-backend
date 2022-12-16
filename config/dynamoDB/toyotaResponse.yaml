@@ -8,7 +8,7 @@ ToyotaResponseDynamoTable:
         AttributeType: "S"
       - AttributeName: "SeqNo"
         AttributeType: "S"
-      - AttributeName: "InsertedTimeStamp"
+      - AttributeName: "ConciliationTimeStamp"
         AttributeType: "S"
     KeySchema:
       - AttributeName: "loadId"
@@ -16,9 +16,9 @@ ToyotaResponseDynamoTable:
       - AttributeName: "SeqNo"
         KeyType: RANGE
     GlobalSecondaryIndexes:
-      - IndexName: omni-toyota-response-InsertedTimeStamp-index-${self:provider.stage}
+      - IndexName: toyota-reconciliation-report-ConciliationTimeStamp-Index-${self:provider.stage}
         KeySchema:
-          - AttributeName: "InsertedTimeStamp"
+          - AttributeName: "ConciliationTimeStamp"
             KeyType: "HASH"
         Projection:
           ProjectionType: "ALL"

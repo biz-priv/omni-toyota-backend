@@ -71,6 +71,7 @@ layers:
 functions:
   toyotaSqsToDynamoDB: ${file(config/functions/toyotaSqsToDynamoDB.yml):function}
   toyotaUpdates: ${file(config/functions/toyotaUpdates.yml):function}
+  reconciliationReport: ${file(config/functions/reconciliationReport.yml):function}
 
 resources:
   Resources:
