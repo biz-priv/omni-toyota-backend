@@ -68,20 +68,20 @@ function getAllDataFromToyota(dateList) {
  * @returns
  */
 function createPayload(data, dateList) {
-  return data.map((e) => ({
+  return {
     TABLE_NAME: "HUBGROUP",
     DEPOT_CD: "",
     INTFC_ID: "000000002",
-    INTFC_NAME: "HUBGROUP",
+    INTFC_NAME: "HUBGROUP", //req
     INTFC_TYPE: "STREAMING", // hardcode
-    INTFC_DTE: dateList.INTFC_DTE, //current date
+    INTFC_DTE: dateList.INTFC_DTE, //req //current date
     INTFC_TO_TMSTMP: dateList.INTFC_TO_TMSTMP,
     INTFC_FROM_TMSTMP: dateList.INTFC_FROM_TMSTMP,
-    TOT_REC_CNT: "586", //TODO:- should we count success or failure records also
+    TOT_REC_CNT: data.length, //req //TODO:- should we count success or failure records also
     SRCE_NAME: "HUB",
     CREATE_TMSTMP: dateList.CREATE_TMSTMP, //current time
     TIME_ZONE: "CST", //hardcode
-  }));
+  };
 }
 
 /**
