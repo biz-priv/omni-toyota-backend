@@ -8,17 +8,17 @@ ToyotaResponseDynamoTable:
         AttributeType: "S"
       - AttributeName: "SeqNo"
         AttributeType: "S"
-      # - AttributeName: "ConciliationTimeStamp"
-      #   AttributeType: "S"
+      - AttributeName: "ConciliationTimeStamp"
+        AttributeType: "S"
     KeySchema:
       - AttributeName: "loadId"
         KeyType: HASH
       - AttributeName: "SeqNo"
         KeyType: RANGE
-    # GlobalSecondaryIndexes:
-    #   - IndexName: toyota-reconciliation-report-ConciliationTimeStamp-Index-${self:provider.stage}
-    #     KeySchema:
-    #       - AttributeName: "ConciliationTimeStamp"
-    #         KeyType: "HASH"
-    #     Projection:
-    #       ProjectionType: "ALL"
+    GlobalSecondaryIndexes:
+      - IndexName: toyota-reconciliation-report-ConciliationTimeStamp-Index-${self:provider.stage}
+        KeySchema:
+          - AttributeName: "ConciliationTimeStamp"
+            KeyType: "HASH"
+        Projection:
+          ProjectionType: "ALL"
