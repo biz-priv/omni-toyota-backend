@@ -168,23 +168,30 @@ async function sendToyotaUpdate(payload) {
   });
 }
 
+/**
+ * date helper all times are in CST
+ * @returns
+ */
 function getDate() {
-  const dateNow = moment.tz("America/Chicago");
-  const dateToday = dateNow.format("YYYY-MM-DD HH:mm:ss").toString();
-  const datePrev = dateNow
-    .subtract(1, "days")
-    .format("YYYY-MM-DD HH:mm:ss")
-    .toString();
-  const ConciliationTimeStamp = dateNow
-    .subtract(1, "days")
-    .format("YYYYMMDD")
-    .toString();
-
   return {
-    INTFC_DTE: dateNow.format("YYYY-MM-DD").toString(),
-    INTFC_TO_TMSTMP: datePrev,
-    INTFC_FROM_TMSTMP: dateToday,
-    CREATE_TMSTMP: dateNow.format("YYYY-MM-DDTHH:mm:ss").toString(),
-    ConciliationTimeStamp,
+    INTFC_DTE: moment.tz("America/Chicago").format("YYYY-MM-DD").toString(),
+    CREATE_TMSTMP: moment
+      .tz("America/Chicago")
+      .format("YYYY-MM-DDTHH:mm:ss")
+      .toString(),
+    INTFC_TO_TMSTMP: moment
+      .tz("America/Chicago")
+      .subtract(1, "days")
+      .format("YYYY-MM-DD HH:mm:ss")
+      .toString(),
+    INTFC_FROM_TMSTMP: moment
+      .tz("America/Chicago")
+      .format("YYYY-MM-DD HH:mm:ss")
+      .toString(),
+    ConciliationTimeStamp: moment
+      .tz("America/Chicago")
+      .subtract(1, "days")
+      .format("YYYYMMDD")
+      .toString(),
   };
 }
