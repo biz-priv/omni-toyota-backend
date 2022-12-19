@@ -1,15 +1,12 @@
 const AWS = require("aws-sdk");
 const moment = require("moment-timezone");
 const axios = require("axios");
-// const { putItem } = require("./shared/dynamo");
 const dynamodb = new AWS.DynamoDB.DocumentClient();
 
 const TOYOTA_CLIENT_ID = process.env.TOYOTA_CLIENT_ID;
 const TOYOTA_JWT_URL = process.env.TOYOTA_JWT_URL;
 const TOYOTA_URL = process.env.TOYOTA_URL;
 const TOYOTA_RESPONSE_DDB = process.env.TOYOTA_RESPONSE_DDB;
-
-// "ConciliationTimeStamp": "20221205", //index
 
 module.exports.handler = async (event, context, callback) => {
   try {
@@ -77,7 +74,7 @@ function createPayload(data, dateList) {
     INTFC_DTE: dateList.INTFC_DTE, //req //current date
     INTFC_TO_TMSTMP: dateList.INTFC_TO_TMSTMP,
     INTFC_FROM_TMSTMP: dateList.INTFC_FROM_TMSTMP,
-    TOT_REC_CNT: data.length, //req //TODO:- should we count success or failure records also
+    TOT_REC_CNT: data.length.toString(), //req //TODO:- should we count success or failure records also
     SRCE_NAME: "HUB",
     CREATE_TMSTMP: dateList.CREATE_TMSTMP, //current time
     TIME_ZONE: "CST", //hardcode
