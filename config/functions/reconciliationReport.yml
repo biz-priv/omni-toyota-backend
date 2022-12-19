@@ -2,8 +2,6 @@
 function:
   name: omni-toyota-reconciliation-report-${self:provider.stage}
   handler: src/reconciliationReport.handler
-  # provisionedConcurrency: 1
-  # concurrencyAutoscaling: true
   layers:
     - { Ref: OmniToyotaLayerLambdaLayer }
   package:
