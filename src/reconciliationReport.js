@@ -66,16 +66,16 @@ function getAllDataFromToyota(dateList) {
  */
 function createPayload(data, dateList) {
   return {
-    TABLE_NAME: "HUBGROUP",
+    TABLE_NAME: "MACH",
     DEPOT_CD: "",
     INTFC_ID: "000000002",
-    INTFC_NAME: "HUBGROUP", //req
+    INTFC_NAME: "MACH", //req
     INTFC_TYPE: "STREAMING", // hardcode
-    SRCE_NAME: "HUB",
+    SRCE_NAME: "MACH",
     INTFC_DTE: dateList.INTFC_DTE, //req //current date
     INTFC_TO_TMSTMP: dateList.INTFC_TO_TMSTMP,
     INTFC_FROM_TMSTMP: dateList.INTFC_FROM_TMSTMP,
-    TOT_REC_CNT: data.map((e) => e.status == "success").length.toString(), //req //TODO:- should we count success or failure records also
+    TOT_REC_CNT: data.map((e) => e.status == "success").length.toString(),
     CREATE_TMSTMP: dateList.CREATE_TMSTMP, //current time
     TIME_ZONE: "CST", //hardcode
   };
