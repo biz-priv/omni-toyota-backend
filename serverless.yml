@@ -51,10 +51,16 @@ custom:
     Application: OmniRealTimeReplication
     CreateBy: BizCloudExperts
     Environment: ${self:custom.stage}
+  logSubscription:
+    enabled: true
+    # below should always be the same. If cloudwatch destination does not exist for your deployment region, create one first.
+    destinationArn: arn:aws:logs:${self:provider.region}:332753493246:destination:bce-logs-cw-destination-${self:provider.region}-${self:provider.stage}
+    filterPattern: '{$.omni-toyota = "*"}'
 
 plugins:
   - serverless-offline
   - serverless-provisioned-concurrency-autoscaling
+  - serverless-plugin-log-subscription
 
 package:
   individually: true
