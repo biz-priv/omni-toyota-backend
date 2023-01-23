@@ -13,6 +13,7 @@ provider:
         - "logs:CreateLogGroup"
         - "logs:CreateLogStream"
         - "logs:PutLogEvents"
+        - "logs:PutSubscriptionFilter"
         - "ec2:CreateNetworkInterface"
         - "ec2:DescribeNetworkInterfaces"
         - "ec2:DeleteNetworkInterface"
