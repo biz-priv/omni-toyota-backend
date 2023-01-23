@@ -32,6 +32,16 @@ const TOYOTA_BILL_NO = process.env.TOYOTA_BILL_NO; //dev:- "22531"
 
 module.exports.handler = async (event, context, callback) => {
   logger.log("log:toyotaSqsToDynamoDB , test log log4js");
+  logger.log({
+    "@timestamp": moment().format("YYYY-MM-DD H:m:ss"),
+    status: "200",
+    message: '{"test": "this is a test message"}',
+    "service-name": "omni-toyota",
+    application: "omni-toyota",
+    region: "us-east-1",
+    functionName: "toyotaSqsToDynamoDB",
+  });
+
   let sqsEventRecords = [];
   try {
     console.log("event", JSON.stringify(event));

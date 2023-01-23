@@ -36,6 +36,10 @@ provider:
         - "sqs:ReceiveMessage"
         - "sqs:DeleteMessage"
       Resource: "*"
+    - Effect: "Allow"
+      Action:
+        - "logs:PutSubscriptionFilter"
+      Resource: "*"
   runtime: nodejs14.x
   environment:
     REGION: ${self:custom.region}
@@ -56,6 +60,7 @@ custom:
     # below should always be the same. If cloudwatch destination does not exist for your deployment region, create one first.
     destinationArn: arn:aws:logs:${self:provider.region}:332753493246:destination:bce-logs-cw-destination-${self:provider.region}-${self:provider.stage}
     filterPattern: '{$.omni-toyota = "*"}'
+    # roleArn: 'some-arn'
 
 plugins:
   - serverless-offline
