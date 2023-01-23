@@ -11,6 +11,7 @@ function:
       - "!**/*"
       - "src/toyotaUpdates.js"
       - "src/shared/**"
+  logSubscription: false
   events:
     - stream: ${ssm:/omni-rt-toyota/${self:provider.stage}/ddb.streamArn~true}
   environment:

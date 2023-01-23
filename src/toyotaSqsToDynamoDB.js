@@ -8,6 +8,16 @@ const {
   updateItem,
 } = require("./shared/dynamo");
 const { getToyotaResonCodeDetails } = require("./shared/toyotaMapping");
+const log4js = require("log4js");
+
+log4js.configure({
+  appenders: {
+    out: { type: "stdout", layout: { type: "messagePassThrough" } },
+  },
+  categories: { default: { appenders: ["out"], level: "info" } },
+});
+
+const logger = log4js.getLogger();
 
 const APAR_FAILURE_TABLE = process.env.APAR_FAILURE_TABLE;
 const CONSIGNEE_TABLE = process.env.CONSIGNEE_TABLE;
@@ -21,6 +31,7 @@ const TOYOTA_DDB = process.env.TOYOTA_DDB;
 const TOYOTA_BILL_NO = process.env.TOYOTA_BILL_NO; //dev:- "22531"
 
 module.exports.handler = async (event, context, callback) => {
+  logger.log("log:toyotaSqsToDynamoDB , test log log4js");
   let sqsEventRecords = [];
   try {
     console.log("event", JSON.stringify(event));
