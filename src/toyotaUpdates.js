@@ -2,6 +2,7 @@ const AWS = require("aws-sdk");
 const moment = require("moment-timezone");
 const axios = require("axios");
 const { putItem } = require("./shared/dynamo");
+const { updateLog } = require("./shared/logHelper");
 
 const TOYOTA_CLIENT_ID = process.env.TOYOTA_CLIENT_ID;
 const TOYOTA_JWT_URL = process.env.TOYOTA_JWT_URL;
@@ -9,6 +10,7 @@ const TOYOTA_URL = process.env.TOYOTA_URL;
 const TOYOTA_RESPONSE_DDB = process.env.TOYOTA_RESPONSE_DDB;
 
 module.exports.handler = async (event, context, callback) => {
+  updateLog("toyotaUpdates:handler", "test msg");
   try {
     console.log("event", JSON.stringify(event));
     // processing all the array of records

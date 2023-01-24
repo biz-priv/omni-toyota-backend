@@ -22,7 +22,7 @@ const TOYOTA_DDB = process.env.TOYOTA_DDB;
 const TOYOTA_BILL_NO = process.env.TOYOTA_BILL_NO; //dev:- "22531"
 
 module.exports.handler = async (event, context, callback) => {
-  updateLog("toyotaSqsToDynamoDB", "test msg");
+  updateLog("toyotaSqsToDynamoDB:handler", "test msg");
   let sqsEventRecords = [];
   try {
     console.log("event", JSON.stringify(event));
