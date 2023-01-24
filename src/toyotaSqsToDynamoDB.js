@@ -264,8 +264,8 @@ function mapToyotaData(dataSet) {
   const toyotaPayload = {
     loadId: shipmentHeader.PK_OrderNo,
     scac: "OMNG", //hardcode
-    carrierOrderNo: referencesLOA?.PK_ReferenceNo ?? "", //must have some value
-    containerNo: referencesTRL?.PK_ReferenceNo ?? "",
+    carrierOrderNo: referencesLOA?.PK_ReferenceNo ?? "", //{required field to send to toyota} tbl_references.FK_RefTypeId == "LOA" && tbl_references.CustomerType == "B"
+    containerNo: referencesTRL?.PK_ReferenceNo ?? "", //  tbl_references.FK_RefTypeId == "TRL"
     billOfLading: shipmentHeader.Housebill,
 
     originFacility: shipper.FK_ShipOrderNo ?? "", // TODO check with kiran
