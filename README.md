@@ -1,9 +1,9 @@
 # omni-toyota-backend
 
-## Toyota Realtime api
+## Toyota Reconciliation Report
 
 ![Toyota Realtime api](diagram/toyota-reconciliation-report.png?raw=true)
 
-## Toyota Reconciliation Report
+## Toyota Realtime api
 
 ![Toyota Reconciliation Report](diagram/toyota-sqs-to-dynamodb.png?raw=true)
