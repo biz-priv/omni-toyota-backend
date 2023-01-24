@@ -9,15 +9,13 @@ const {
 } = require("./shared/dynamo");
 const { getToyotaResonCodeDetails } = require("./shared/toyotaMapping");
 const log4js = require("log4js");
-
 log4js.configure({
   appenders: {
     out: { type: "stdout", layout: { type: "messagePassThrough" } },
   },
   categories: { default: { appenders: ["out"], level: "info" } },
 });
-
-const logger = log4js.getLogger();
+const logger = log4js.getLogger("out");
 
 const APAR_FAILURE_TABLE = process.env.APAR_FAILURE_TABLE;
 const CONSIGNEE_TABLE = process.env.CONSIGNEE_TABLE;
@@ -31,17 +29,17 @@ const TOYOTA_DDB = process.env.TOYOTA_DDB;
 const TOYOTA_BILL_NO = process.env.TOYOTA_BILL_NO; //dev:- "22531"
 
 module.exports.handler = async (event, context, callback) => {
-  logger.log("log:toyotaSqsToDynamoDB , test log log4js");
-  logger.log({
-    "@timestamp": moment().format("YYYY-MM-DD H:m:ss"),
-    status: "200",
-    message: '{"test": "this is a test message"}',
-    "service-name": "omni-toyota",
-    application: "omni-toyota",
-    region: "us-east-1",
-    functionName: "toyotaSqsToDynamoDB",
-  });
-
+  logger.info(
+    JSON.stringify({
+      "@timestamp": moment().format("YYYY-MM-DD H:m:ss"),
+      status: "200",
+      message: '{"test": "this is a test message"}',
+      "service-name": "omni-toyota",
+      application: "omni-toyota",
+      region: "us-east-1",
+      functionName: "toyotaSqsToDynamoDB",
+    })
+  );
   let sqsEventRecords = [];
   try {
     console.log("event", JSON.stringify(event));
