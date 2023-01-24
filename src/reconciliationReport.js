@@ -1,6 +1,7 @@
 const AWS = require("aws-sdk");
 const moment = require("moment-timezone");
 const axios = require("axios");
+const { updateLog } = require("./shared/logHelper");
 const dynamodb = new AWS.DynamoDB.DocumentClient();
 
 const TOYOTA_CLIENT_ID = process.env.TOYOTA_CLIENT_ID;
@@ -9,6 +10,7 @@ const TOYOTA_URL = process.env.TOYOTA_URL;
 const TOYOTA_RESPONSE_DDB = process.env.TOYOTA_RESPONSE_DDB;
 
 module.exports.handler = async (event, context, callback) => {
+  updateLog("reconciliationReport:handler", "test msg");
   try {
     console.log("event", JSON.stringify(event));
     const dateList = getDate();
