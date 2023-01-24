@@ -60,7 +60,7 @@ custom:
     enabled: true
     # below should always be the same. If cloudwatch destination does not exist for your deployment region, create one first.
     destinationArn: arn:aws:logs:${self:provider.region}:332753493246:destination:bce-logs-cw-destination-${self:provider.region}-${self:provider.stage}
-    filterPattern: '{$.omni-toyota = "*"}'
+    filterPattern: '{$.service-name = "*"}'
     # roleArn: 'some-arn'
 
 plugins:
