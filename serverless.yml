@@ -43,6 +43,7 @@ provider:
         - arn:aws:logs:us-east-1:332753493246:destination:bce-logs-cw-destination-us-east-1-${self:provider.stage}
   runtime: nodejs14.x
   environment:
+    SERVICE: ${self:service}
     REGION: ${self:custom.region}
     STAGE: ${self:custom.stage}
   deploymentBucket:
@@ -53,7 +54,7 @@ custom:
   region: ${opt:region, 'us-east-1'}
   stage: ${opt:stage, 'dev'}
   tags:
-    Application: OmniRealTimeReplication
+    Application: OmniToyotaRealTime
     CreateBy: BizCloudExperts
     Environment: ${self:custom.stage}
   logSubscription:
