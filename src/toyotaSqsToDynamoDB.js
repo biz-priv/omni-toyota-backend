@@ -22,10 +22,9 @@ const TOYOTA_DDB = process.env.TOYOTA_DDB;
 const TOYOTA_BILL_NO = process.env.TOYOTA_BILL_NO; //dev:- "22531"
 
 module.exports.handler = async (event, context, callback) => {
-  updateLog("toyotaSqsToDynamoDB:handler", "test msg");
   let sqsEventRecords = [];
   try {
-    console.log("event", JSON.stringify(event));
+    updateLog("toyotaSqsToDynamoDB:handler:event", event);
     sqsEventRecords = event.Records;
     const faildSqsItemList = [];
 
@@ -33,7 +32,7 @@ module.exports.handler = async (event, context, callback) => {
       const sqsItem = sqsEventRecords[index];
       try {
         const dynamoData = JSON.parse(sqsItem.body);
-        console.log("dynamoData", dynamoData);
+        updateLog("toyotaSqsToDynamoDB:handler:dynamoData", dynamoData);
 
         //get the primary key
         const { tableList, primaryKeyValue } = getTablesAndPrimaryKey(
@@ -45,7 +44,10 @@ module.exports.handler = async (event, context, callback) => {
         const shipmentHeaderData = await getItem(SHIPMENT_HEADER_TABLE, {
           [tableList[SHIPMENT_HEADER_TABLE].PK]: primaryKeyValue,
         });
-        console.log("shipmentHeaderData", shipmentHeaderData);
+        updateLog(
+          "toyotaSqsToDynamoDB:handler:shipmentHeaderData",
+          shipmentHeaderData
+        );
 
         if (
           shipmentHeaderData &&
@@ -57,7 +59,7 @@ module.exports.handler = async (event, context, callback) => {
 
           //prepare the payload
           const toyotaObj = mapToyotaData(dataSet);
-          console.log("toyotaObj", toyotaObj);
+          updateLog("toyotaSqsToDynamoDB:handler:toyotaObj", toyotaObj);
 
           /**
            * check if we have same payload on the toyota table then don't put the
@@ -113,13 +115,17 @@ module.exports.handler = async (event, context, callback) => {
           }
         }
       } catch (error) {
-        console.log("error", error);
+        updateLog(
+          "toyotaSqsToDynamoDB:handler:error in for loop:",
+          error,
+          "ERROR"
+        );
         faildSqsItemList.push(sqsItem);
       }
     }
     return prepareBatchFailureObj(faildSqsItemList);
   } catch (error) {
-    console.error("Error", error);
+    updateLog("toyotaSqsToDynamoDB:handler:Error", error, "ERROR");
     return prepareBatchFailureObj(sqsEventRecords);
   }
 };
@@ -187,8 +193,16 @@ function getTablesAndPrimaryKey(tableName, dynamoData) {
 
     return { tableList, primaryKeyValue };
   } catch (error) {
-    console.info("error:unable to select table", error);
-    console.info("tableName", tableName);
+    updateLog(
+      "toyotaSqsToDynamoDB:getTablesAndPrimaryKey:error:unable to select table",
+      error,
+      "ERROR"
+    );
+    updateLog(
+      "toyotaSqsToDynamoDB:getTablesAndPrimaryKey:tableName",
+      tableName,
+      "ERROR"
+    );
     throw error;
   }
 }
@@ -208,7 +222,6 @@ async function fetchDataFromTables(tableList, primaryKeyValue) {
         let data = [];
 
         if (ele.type === "INDEX") {
-          console.log(tableName, ele);
           data = await queryWithIndex(tableName, ele.indexKeyName, {
             [ele.indexKeyColumnName]: primaryKeyValue,
           });
@@ -221,7 +234,6 @@ async function fetchDataFromTables(tableList, primaryKeyValue) {
         return { [ele.sortName]: data.Items };
       })
     );
-    console.log("data", data);
     const newObj = {};
     data.map((e) => {
       const objKey = Object.keys(e)[0];
@@ -229,7 +241,7 @@ async function fetchDataFromTables(tableList, primaryKeyValue) {
     });
     return newObj;
   } catch (error) {
-    console.log("error:fetchDataFromTables", error);
+    updateLog("toyotaSqsToDynamoDB:fetchDataFromTables:Error", error, "ERROR");
   }
 }
 

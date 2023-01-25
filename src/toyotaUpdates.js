@@ -10,9 +10,8 @@ const TOYOTA_URL = process.env.TOYOTA_URL;
 const TOYOTA_RESPONSE_DDB = process.env.TOYOTA_RESPONSE_DDB;
 
 module.exports.handler = async (event, context, callback) => {
-  updateLog("toyotaUpdates:handler", "test msg");
   try {
-    console.log("event", JSON.stringify(event));
+    updateLog("toyotaUpdates:handler:event", event);
     // processing all the array of records
     for (let index = 0; index < event.Records.length; index++) {
       const NewImage = event.Records[index].dynamodb.NewImage;
@@ -70,14 +69,14 @@ function toyotaAuth() {
           resolve(response.data);
         })
         .catch(function (error) {
-          console.log(
-            "error",
-            JSON.stringify(error?.response?.data ?? "toyota api error")
+          updateLog(
+            "toyotaUpdates:toyotaAuth:error",
+            error?.response?.data ?? "toyota api error"
           );
           reject(error?.response?.data ?? "toyota api error");
         });
     } catch (error) {
-      console.log("error:toyotaAuth", error);
+      updateLog("toyotaUpdates:toyotaAuth:error", error);
       reject(error);
     }
   });
@@ -104,16 +103,15 @@ async function sendToyotaUpdate(payload) {
 
       axios(config)
         .then(function (response) {
-          console.log(JSON.stringify(response.data));
           resolve({
             toyotaRes: JSON.stringify(response.data),
             status: "success",
           });
         })
         .catch(function (error) {
-          console.log(
-            "error",
-            JSON.stringify(error?.response?.data ?? "toyota api error")
+          updateLog(
+            "toyotaUpdates:sendToyotaUpdate:error",
+            error?.response?.data ?? "toyota api error"
           );
           resolve({
             toyotaRes:
@@ -122,7 +120,7 @@ async function sendToyotaUpdate(payload) {
           });
         });
     } catch (error) {
-      console.log("error:sendToyotaUpdate", error);
+      updateLog("toyotaUpdates:sendToyotaUpdate:error", error);
       resolve({
         toyotaRes: "toyota api error",
         status: "failed",

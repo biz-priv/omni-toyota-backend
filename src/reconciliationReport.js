@@ -10,23 +10,23 @@ const TOYOTA_URL = process.env.TOYOTA_URL;
 const TOYOTA_RESPONSE_DDB = process.env.TOYOTA_RESPONSE_DDB;
 
 module.exports.handler = async (event, context, callback) => {
-  updateLog("reconciliationReport:handler", "test msg");
   try {
-    console.log("event", JSON.stringify(event));
+    updateLog("reconciliationReport:handler:event", event);
+
     const dateList = getDate();
-    console.log("dateList", dateList);
+    updateLog("reconciliationReport:handler:dateList", dateList);
 
     const toyotaData = await getAllDataFromToyota(dateList);
-    console.log("toyotaData", toyotaData.length);
+    updateLog("reconciliationReport:handler:toyotaData", toyotaData.length);
 
     const payload = createPayload(toyotaData, dateList);
-    console.log("payload", payload);
+    updateLog("reconciliationReport:handler:payload", payload);
 
     const toyotaRes = await sendToyotaUpdate(payload);
-    console.log("toyotaRes", toyotaRes);
+    updateLog("reconciliationReport:handler:toyotaRes", toyotaRes);
     return "success";
   } catch (error) {
-    console.error("Error", error);
+    updateLog("reconciliationReport:handler:Error", error, "ERROR");
     return "error";
   }
 };
@@ -48,14 +48,17 @@ function getAllDataFromToyota(dateList) {
         ExpressionAttributeValues: { ":date": dateList.ConciliationTimeStamp },
       };
       const data = await dynamodb.query(params).promise();
-      console.log("data", data);
       if (data && data.Items.length > 0) {
         resolve(data.Items);
       } else {
         reject("No data available");
       }
     } catch (error) {
-      console.log("error:getAllDataFromToyota", error);
+      updateLog(
+        "reconciliationReport:getAllDataFromToyota:error",
+        error,
+        "ERROR"
+      );
       reject(error);
     }
   });
@@ -106,14 +109,15 @@ function toyotaAuth() {
           resolve(response.data);
         })
         .catch(function (error) {
-          console.log(
-            "error",
-            JSON.stringify(error?.response?.data ?? "toyota api error")
+          updateLog(
+            "reconciliationReport:toyotaAuth:error",
+            error?.response?.data ?? "toyota api error",
+            "ERROR"
           );
           reject(error?.response?.data ?? "toyota api error");
         });
     } catch (error) {
-      console.log("error:toyotaAuth", error);
+      updateLog("reconciliationReport:toyotaAuth:error", error, "ERROR");
       reject(error);
     }
   });
@@ -140,16 +144,16 @@ async function sendToyotaUpdate(payload) {
 
       axios(config)
         .then(function (response) {
-          console.log(JSON.stringify(response.data));
           resolve({
             toyotaRes: JSON.stringify(response.data),
             status: "success",
           });
         })
         .catch(function (error) {
-          console.log(
-            "error",
-            JSON.stringify(error?.response?.data ?? "toyota api error")
+          updateLog(
+            "reconciliationReport:sendToyotaUpdate:error",
+            error?.response?.data ?? "toyota api error",
+            "ERROR"
           );
           resolve({
             toyotaRes:
@@ -158,7 +162,7 @@ async function sendToyotaUpdate(payload) {
           });
         });
     } catch (error) {
-      console.log("error:sendToyotaUpdate", error);
+      updateLog("reconciliationReport:sendToyotaUpdate:error", error, "ERROR");
       resolve({
         toyotaRes: "toyota api error",
         status: "failed",
