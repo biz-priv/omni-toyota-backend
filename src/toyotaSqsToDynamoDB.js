@@ -19,7 +19,7 @@ const SHIPMENT_MILESTONE_TABLE = process.env.SHIPMENT_MILESTONE_TABLE;
 const SHIPPER_TABLE = process.env.SHIPPER_TABLE;
 const REFERENCES_INDEX_KEY_NAME = process.env.REFERENCES_INDEX_KEY_NAME;
 const TOYOTA_DDB = process.env.TOYOTA_DDB;
-const TOYOTA_BILL_NO = process.env.TOYOTA_BILL_NO; //dev:- "22531"
+const TOYOTA_BILL_NO = process.env.TOYOTA_BILL_NO; //dev:- "23190", prod:- "23032"
 
 module.exports.handler = async (event, context, callback) => {
   let sqsEventRecords = [];
