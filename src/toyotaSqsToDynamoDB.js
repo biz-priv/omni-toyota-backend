@@ -10,16 +10,18 @@ const {
 const { updateLog } = require("./shared/logHelper");
 const { getToyotaResonCodeDetails } = require("./shared/toyotaMapping");
 
-const APAR_FAILURE_TABLE = process.env.APAR_FAILURE_TABLE;
-const CONSIGNEE_TABLE = process.env.CONSIGNEE_TABLE;
-const REFERENCES_TABLE = process.env.REFERENCES_TABLE;
-const SHIPMENT_APAR_TABLE = process.env.SHIPMENT_APAR_TABLE;
-const SHIPMENT_HEADER_TABLE = process.env.SHIPMENT_HEADER_TABLE;
-const SHIPMENT_MILESTONE_TABLE = process.env.SHIPMENT_MILESTONE_TABLE;
-const SHIPPER_TABLE = process.env.SHIPPER_TABLE;
-const REFERENCES_INDEX_KEY_NAME = process.env.REFERENCES_INDEX_KEY_NAME;
-const TOYOTA_DDB = process.env.TOYOTA_DDB;
-const TOYOTA_BILL_NO = process.env.TOYOTA_BILL_NO; //dev:- "23190", prod:- "23032"
+const {
+  APAR_FAILURE_TABLE,
+  CONSIGNEE_TABLE,
+  REFERENCES_TABLE,
+  SHIPMENT_APAR_TABLE,
+  SHIPMENT_HEADER_TABLE,
+  SHIPMENT_MILESTONE_TABLE,
+  SHIPPER_TABLE,
+  REFERENCES_INDEX_KEY_NAME,
+  TOYOTA_DDB,
+  TOYOTA_BILL_NO, //dev:- "23190", prod:- "23032"
+} = process.env;
 
 module.exports.handler = async (event, context, callback) => {
   let sqsEventRecords = [];
@@ -57,61 +59,93 @@ module.exports.handler = async (event, context, callback) => {
           //get data from all the requied tables
           const dataSet = await fetchDataFromTables(tableList, primaryKeyValue);
 
-          //prepare the payload
-          const toyotaObj = mapToyotaData(dataSet);
-          updateLog("toyotaSqsToDynamoDB:handler:toyotaObj", toyotaObj);
+          const shipmentHeader =
+            dataSet.shipmentHeader.length > 0 ? dataSet.shipmentHeader[0] : {};
 
-          /**
-           * check if we have same payload on the toyota table then don't put the
-           * else increase the SeqNo and put the record to toyota table
-           * if carrierOrderNo is empty for previous records then update that also.
-           */
-          const getToyotaData = await queryWithPartitionKey(TOYOTA_DDB, {
-            loadId: toyotaObj.loadId,
-          });
-          let SeqNo = 1;
-          if (getToyotaData.Items && getToyotaData.Items.length > 0) {
-            const { latestObj, isDiff } = getDiff([...getToyotaData.Items], {
-              ...toyotaObj,
+          const shipmentMilestone = getLatestObjByTimeStamp(
+            dataSet.shipmentMilestone
+          );
+
+          console.log(
+            "shipmentHeader.ReadyDateTime",
+            shipmentHeader.ReadyDateTime
+          );
+          console.log("shipmentHeader.ETADateTime", shipmentHeader.ETADateTime);
+          if (
+            dynamoData.dynamoTableName === SHIPMENT_HEADER_TABLE &&
+            (shipmentHeader.ReadyDateTime.startsWith("19") ||
+              shipmentHeader.ETADateTime.startsWith("19"))
+          ) {
+            continue;
+          }
+
+          const eventData = getEventdesc(
+            shipmentHeader,
+            shipmentMilestone,
+            dynamoData.dynamoTableName
+          );
+          console.log("eventData", eventData);
+
+          for (let index = 0; index < eventData.length; index++) {
+            const eventDesc = eventData[index];
+
+            //prepare the payload
+            const toyotaObj = mapToyotaData(dataSet, eventDesc);
+            console.log("toyotaObj", toyotaObj);
+            updateLog("toyotaSqsToDynamoDB:handler:toyotaObj", toyotaObj);
+
+            /**
+             * check if we have same payload on the toyota table then don't put the
+             * else increase the SeqNo and put the record to toyota table
+             * if carrierOrderNo is empty for previous records then update that also.
+             */
+            const getToyotaData = await queryWithPartitionKey(TOYOTA_DDB, {
+              loadId: toyotaObj.loadId,
             });
-            if (isDiff) {
-              SeqNo += getToyotaData.Items.length;
+            let SeqNo = 1;
+            if (getToyotaData.Items && getToyotaData.Items.length > 0) {
+              const { latestObj, isDiff } = getDiff([...getToyotaData.Items], {
+                ...toyotaObj,
+              });
+              if (isDiff) {
+                SeqNo += getToyotaData.Items.length;
+                await putItem(TOYOTA_DDB, {
+                  ...toyotaObj,
+                  SeqNo: SeqNo.toString(),
+                });
+
+                //update all other records with carrierOrderNo
+                if (
+                  latestObj.carrierOrderNo.length === 0 &&
+                  toyotaObj.carrierOrderNo.length > 0
+                ) {
+                  for (
+                    let index = 0;
+                    index < getToyotaData.Items.length;
+                    index++
+                  ) {
+                    const e = getToyotaData.Items[index];
+                    await updateItem(
+                      TOYOTA_DDB,
+                      {
+                        loadId: e.loadId,
+                        SeqNo: e.SeqNo,
+                      },
+                      {
+                        ...e,
+                        carrierOrderNo: toyotaObj.carrierOrderNo,
+                      }
+                    );
+                  }
+                }
+              }
+            } else {
+              //save to dynamo DB
               await putItem(TOYOTA_DDB, {
                 ...toyotaObj,
                 SeqNo: SeqNo.toString(),
               });
-
-              //update all other records with carrierOrderNo
-              if (
-                latestObj.carrierOrderNo.length === 0 &&
-                toyotaObj.carrierOrderNo.length > 0
-              ) {
-                for (
-                  let index = 0;
-                  index < getToyotaData.Items.length;
-                  index++
-                ) {
-                  const e = getToyotaData.Items[index];
-                  await updateItem(
-                    TOYOTA_DDB,
-                    {
-                      loadId: e.loadId,
-                      SeqNo: e.SeqNo,
-                    },
-                    {
-                      ...e,
-                      carrierOrderNo: toyotaObj.carrierOrderNo,
-                    }
-                  );
-                }
-              }
             }
-          } else {
-            //save to dynamo DB
-            await putItem(TOYOTA_DDB, {
-              ...toyotaObj,
-              SeqNo: SeqNo.toString(),
-            });
           }
         }
       } catch (error) {
@@ -250,7 +284,7 @@ async function fetchDataFromTables(tableList, primaryKeyValue) {
  * @param {*} dataSet
  * @returns
  */
-function mapToyotaData(dataSet) {
+function mapToyotaData(dataSet, eventDesc) {
   // shipmentHeader,consignee,shipper always have one value
 
   const shipmentHeader =
@@ -292,7 +326,9 @@ function mapToyotaData(dataSet) {
     destinationState: consignee?.FK_ConState ?? "",
     destinationZip: consignee?.ConZip ?? "",
 
-    event: shipmentMilestone?.FK_OrderStatusId ?? "",
+    // event: shipmentMilestone?.FK_OrderStatusId ?? "",
+    event: eventDesc,
+
     eventtimestamp: shipmentMilestone?.EventDateTime ?? "",
     timeZone: shipmentMilestone?.EventTimeZone ?? "",
 
@@ -314,6 +350,62 @@ function mapToyotaData(dataSet) {
       .toString(),
   };
   return toyotaPayload;
+}
+
+/**
+ * 1. if there is a event from omni-wt-rt-shipment-milestone-<env> table,
+ *    based on the FK_OrderStatusId we need to map the WT event to the Toyota event milestone as per the sheet.
+ *
+ * 2. for example, if we had recieved an event with FK_OrderNo : "211860" and FK_OrderStatusId = 'TTC',
+ *    we need to map it to 'Completed Loading' and send it to Toyota API.
+ *
+ * 3. For the events 'TTC, 'AAD', 'DEL' from WT the mapping to toyota is straight forward.
+ *
+ * 4. If the event from WT is 'COB'
+ *    we need to send to events to toyota 'Depart Pickup Location' and 'In transit' seperately.
+ *
+ * 5. For a event that comes from omni-wt-rt-shipment-header-<env> table,
+ *    if it contains tbl_ShipmentHeader.readydatetime , we send 'Pick Up Appointment' to toyota and
+ *    if it contains tbl_ShipmentHeader.etadatetime we send 'Delivery Appointment'.
+ *
+ * **Note if tbl_ShipmentHeader.readydatetime or tbl_ShipmentHeader.etadatetime contains date time value
+ *    that starts with '1900-01-01', this should be ignored and not sent to Toyota
+ */
+function getEventdesc(shipmentHeader, shipmentMilestone, eventTable) {
+  console.log(
+    eventTable === SHIPMENT_MILESTONE_TABLE,
+    eventTable,
+    SHIPMENT_MILESTONE_TABLE
+  );
+  const dataMap = {
+    TTC: ["Completed Loading"],
+    AAD: ["Arrive Delivery Location"],
+    DEL: ["Completed Unloading"],
+    COB: ["Depart Pickup Location", "In Transit"],
+  };
+  if (eventTable === SHIPMENT_MILESTONE_TABLE) {
+    /**
+     * change evant code to desc based on shipmentMilestone
+     */
+    return shipmentMilestone?.FK_OrderStatusId &&
+      shipmentMilestone.FK_OrderStatusId.length > 0
+      ? dataMap?.[shipmentMilestone.FK_OrderStatusId] ?? [
+          shipmentMilestone.FK_OrderStatusId,
+        ]
+      : [""];
+  } else if (eventTable === SHIPMENT_HEADER_TABLE) {
+    /**
+     * change evant code to desc based on shipmentHeader
+     */
+    let event = "";
+    if (shipmentHeader.ReadyDateTime != "") {
+      event = ["Pick Up Appointment"];
+    }
+    if (shipmentHeader.ETADateTime != "") {
+      event = ["Delivery Appointment"];
+    }
+    return event;
+  }
 }
 
 /**
