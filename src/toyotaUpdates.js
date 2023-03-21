@@ -11,6 +11,7 @@ const TOYOTA_RESPONSE_DDB = process.env.TOYOTA_RESPONSE_DDB;
 
 module.exports.handler = async (event, context, callback) => {
   try {
+    console.info("Event", event)
     updateLog("toyotaUpdates:handler:event", event);
     // processing all the array of records
     for (let index = 0; index < event.Records.length; index++) {
