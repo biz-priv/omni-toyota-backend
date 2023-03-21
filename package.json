@@ -17,7 +17,7 @@
   },
   "homepage": "https://github.com/bizcloud-experts/omni-toyota#readme",
   "dependencies": {
-    "aws-sdk": "^2.1163.0",
+    "aws-sdk": "^2.1340.0",
     "axios": "^1.2.0",
     "lodash": "^4.17.21",
     "lodash.get": "^4.4.2",
