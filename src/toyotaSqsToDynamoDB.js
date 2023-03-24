@@ -9,6 +9,7 @@ const {
 } = require("./shared/dynamo");
 const { updateLog } = require("./shared/logHelper");
 const { getToyotaResonCodeDetails } = require("./shared/toyotaMapping");
+// const { v4: uuidv4 } = require("uuid");
 
 const {
   APAR_FAILURE_TABLE,
@@ -112,6 +113,7 @@ module.exports.handler = async (event, context, callback) => {
                 await putItem(TOYOTA_DDB, {
                   ...toyotaObj,
                   SeqNo: SeqNo.toString(),
+                  Paylode: JSON.stringify([toyotaObj]),
                 });
 
                 //update all other records with carrierOrderNo
@@ -134,6 +136,7 @@ module.exports.handler = async (event, context, callback) => {
                       {
                         ...e,
                         carrierOrderNo: toyotaObj.carrierOrderNo,
+                        Paylode: JSON.stringify([toyotaObj]),
                       }
                     );
                   }
@@ -144,6 +147,7 @@ module.exports.handler = async (event, context, callback) => {
               await putItem(TOYOTA_DDB, {
                 ...toyotaObj,
                 SeqNo: SeqNo.toString(),
+                Paylode: JSON.stringify([toyotaObj]),
               });
             }
           }
