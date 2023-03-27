@@ -97,9 +97,11 @@ module.exports.handler = async (event, context, callback) => {
               toyotaObj.billOfLading == 0 ||
               toyotaObj.billOfLading == "" ||
               toyotaObj.containerNo == 0 ||
-              toyotaObj.containerNo == ""
+              toyotaObj.containerNo == "" ||
+              toyotaObj.eventtimestamp == 0 ||
+              toyotaObj.eventtimestamp == ""
             ) {
-              return "No billOfLading or containerNo";
+              return `Missing require fileds eventtimestamp or billOfLading or containerNo`;
             }
             updateLog("toyotaSqsToDynamoDB:handler:toyotaObj", toyotaObj);
 
@@ -411,8 +413,8 @@ function getEventdesc(shipmentHeader, shipmentMilestone, eventTable) {
     return shipmentMilestone?.FK_OrderStatusId &&
       shipmentMilestone.FK_OrderStatusId.length > 0
       ? dataMap?.[shipmentMilestone.FK_OrderStatusId] ?? [
-        shipmentMilestone.FK_OrderStatusId,
-      ]
+          shipmentMilestone.FK_OrderStatusId,
+        ]
       : [""];
   } else if (eventTable === SHIPMENT_HEADER_TABLE) {
     /**
