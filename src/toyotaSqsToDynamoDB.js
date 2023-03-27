@@ -113,7 +113,7 @@ module.exports.handler = async (event, context, callback) => {
                 await putItem(TOYOTA_DDB, {
                   ...toyotaObj,
                   SeqNo: SeqNo.toString(),
-                  Paylode: JSON.stringify([toyotaObj]),
+                  payload: JSON.stringify([toyotaObj]),
                 });
 
                 //update all other records with carrierOrderNo
@@ -136,7 +136,7 @@ module.exports.handler = async (event, context, callback) => {
                       {
                         ...e,
                         carrierOrderNo: toyotaObj.carrierOrderNo,
-                        Paylode: JSON.stringify([toyotaObj]),
+                        payload: JSON.stringify([toyotaObj]),
                       }
                     );
                   }
@@ -147,7 +147,7 @@ module.exports.handler = async (event, context, callback) => {
               await putItem(TOYOTA_DDB, {
                 ...toyotaObj,
                 SeqNo: SeqNo.toString(),
-                Paylode: JSON.stringify([toyotaObj]),
+                payload: JSON.stringify([toyotaObj]),
               });
             }
           }
