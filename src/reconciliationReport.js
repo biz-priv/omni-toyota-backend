@@ -3,6 +3,7 @@ const moment = require("moment-timezone");
 const axios = require("axios");
 const { updateLog } = require("./shared/logHelper");
 const dynamodb = new AWS.DynamoDB.DocumentClient();
+const { v4: uuidv4 } = require("uuid");
 
 const TOYOTA_CLIENT_ID = process.env.TOYOTA_CLIENT_ID;
 const TOYOTA_JWT_URL = process.env.TOYOTA_JWT_URL;
@@ -24,6 +25,21 @@ module.exports.handler = async (event, context, callback) => {
 
     const toyotaRes = await sendToyotaUpdate(payload);
     updateLog("reconciliationReport:handler:toyotaRes", toyotaRes);
+
+    //put dynamo db omni-rt-toyota-recon-report-{env}
+    const reconReportPayload = {
+      PK: uuidv4(),
+      payload: JSON.stringify(payload),
+      response: JSON.stringify(toyotaRes),
+      status: toyotaRes?.status ?? "",
+      insertedTimeStamp: moment
+        .tz("America/Chicago")
+        .format("YYYY:MM:DD HH:mm:ss")
+        .toString(),
+    };
+    console.log("reconReportPayload", reconReportPayload);
+    await putItem(TOYOTA_RECON_REPORT_DDB, reconReportPayload);
+
     return "success";
   } catch (error) {
     updateLog("reconciliationReport:handler:Error", error, "ERROR");

@@ -90,3 +90,4 @@ resources:
   Resources:
     ToyotaDynamoTable: ${file(config/dynamoDB/toyota.yaml):ToyotaDynamoTable}
     ToyotaResponseDynamoTable: ${file(config/dynamoDB/toyotaResponse.yaml):ToyotaResponseDynamoTable}
+    ToyotaReconReport: ${file(config/dynamoDB/toyotaReconReport.yaml):ToyotaReconReport}
