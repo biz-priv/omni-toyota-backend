@@ -93,6 +93,14 @@ module.exports.handler = async (event, context, callback) => {
             //prepare the payload
             const toyotaObj = mapToyotaData(dataSet, eventDesc);
             console.log("toyotaObj", toyotaObj);
+            if (
+              toyotaObj.billOfLading == 0 ||
+              toyotaObj.billOfLading == "" ||
+              toyotaObj.containerNo == 0 ||
+              toyotaObj.containerNo == ""
+            ) {
+              return "No billOfLading or containerNo";
+            }
             updateLog("toyotaSqsToDynamoDB:handler:toyotaObj", toyotaObj);
 
             /**
@@ -342,8 +350,8 @@ function mapToyotaData(dataSet, eventDesc) {
     timeZone: shipmentMilestone?.EventTimeZone ?? "",
 
     eta: shipmentHeader.ETADateTime,
-    appointmentStartTime: shipmentHeader.ScheduledDateTime,
-    appointmentEndTime: appointmentEndTimeValue, //2023-03-22 00:00:00.000
+    appointmentStartTime: replaceTime(shipmentHeader.ScheduledDateTime),
+    appointmentEndTime: replaceTime(appointmentEndTimeValue), //2023-03-22 00:00:00.000
 
     reasoncode: reasonCodeDetails?.reasonCode ?? "",
     reasondescription: reasonCodeDetails?.reasonDescription ?? "",
@@ -358,6 +366,7 @@ function mapToyotaData(dataSet, eventDesc) {
       .format("YYYY:MM:DD HH:mm:ss")
       .toString(),
   };
+
   return toyotaPayload;
 }
 
@@ -390,7 +399,10 @@ function getEventdesc(shipmentHeader, shipmentMilestone, eventTable) {
     TTC: ["Completed Loading"],
     AAD: ["Arrive Delivery Location"],
     DEL: ["Completed Unloading"],
-    COB: ["Depart Pickup Location", "In Transit"],
+    COB: ["In Transit"],
+    APP: ["Pick Up Appointment"],
+    PUP: ["Depart Pickup Location"],
+    APD: ["Delivery Appointment"],
   };
   if (eventTable === SHIPMENT_MILESTONE_TABLE) {
     /**
@@ -492,4 +504,12 @@ function timeSwap(startTime, endTime) {
   } else {
     return endTime;
   }
+}
+// 4932014
+
+function replaceTime(date) {
+  // const originalDate = "2023-03-22 05:30:00.000";
+  let originalDate = date;
+  const convertedDate = originalDate.replace(" ", "T");
+  return convertedDate;
 }
