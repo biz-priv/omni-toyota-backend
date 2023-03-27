@@ -311,6 +311,11 @@ function mapToyotaData(dataSet, eventDesc) {
 
   const reasonCodeDetails = getToyotaResonCodeDetails(aparFailure?.FDCode);
 
+  const appointmentEndTimeValue = timeSwap(
+    shipmentHeader.ScheduledDateTime,
+    shipmentHeader.ScheduledDateTimeRange
+  );
+
   const toyotaPayload = {
     loadId: shipmentHeader.PK_OrderNo,
     scac: "OMNG", //hardcode
@@ -338,7 +343,7 @@ function mapToyotaData(dataSet, eventDesc) {
 
     eta: shipmentHeader.ETADateTime,
     appointmentStartTime: shipmentHeader.ScheduledDateTime,
-    appointmentEndTime: shipmentHeader.ScheduledDateTimeRange,
+    appointmentEndTime: appointmentEndTimeValue, //2023-03-22 00:00:00.000
 
     reasoncode: reasonCodeDetails?.reasonCode ?? "",
     reasondescription: reasonCodeDetails?.reasonDescription ?? "",
@@ -466,4 +471,25 @@ function sortObjKeys(mainObj) {
       obj[key] = mainObj[key];
       return obj;
     }, {});
+}
+
+/**
+ * if ScheduledDateTimeRange from shipmentHeader contain 00:00 changing that to ScheduledDateTime time value
+ * @param {*} startTime
+ * @param {*} endTime
+ * @returns
+ */
+function timeSwap(startTime, endTime) {
+  let timeS = startTime;
+  timeS = timeS.slice(-12);
+
+  let timeE = endTime;
+  timeE = timeE.slice(-12);
+
+  if (timeE == "00:00:00.000") {
+    let newString = endTime.replace("00:00:00.000", timeS);
+    return newString;
+  } else {
+    return endTime;
+  }
 }
