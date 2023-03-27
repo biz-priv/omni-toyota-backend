@@ -10,6 +10,7 @@ const TOYOTA_CLIENT_ID = process.env.TOYOTA_CLIENT_ID;
 const TOYOTA_JWT_URL = process.env.TOYOTA_JWT_URL;
 const TOYOTA_URL = process.env.TOYOTA_URL;
 const TOYOTA_RESPONSE_DDB = process.env.TOYOTA_RESPONSE_DDB;
+const TOYOTA_RECON_REPORT_DDB = process.env.TOYOTA_RECON_REPORT_DDB;
 
 module.exports.handler = async (event, context, callback) => {
   try {
