@@ -4,11 +4,13 @@ const axios = require("axios");
 const { updateLog } = require("./shared/logHelper");
 const dynamodb = new AWS.DynamoDB.DocumentClient();
 const { v4: uuidv4 } = require("uuid");
+const { putItem } = require("./shared/dynamo");
 
 const TOYOTA_CLIENT_ID = process.env.TOYOTA_CLIENT_ID;
 const TOYOTA_JWT_URL = process.env.TOYOTA_JWT_URL;
 const TOYOTA_URL = process.env.TOYOTA_URL;
 const TOYOTA_RESPONSE_DDB = process.env.TOYOTA_RESPONSE_DDB;
+const TOYOTA_RECON_REPORT_DDB = process.env.TOYOTA_RECON_REPORT_DDB;
 
 module.exports.handler = async (event, context, callback) => {
   try {
