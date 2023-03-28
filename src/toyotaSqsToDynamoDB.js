@@ -333,13 +333,15 @@ function mapToyotaData(dataSet, eventDesc) {
     containerNo: referencesTRL?.ReferenceNo ?? "", //  tbl_references.FK_RefTypeId == "TRL"
     billOfLading: shipmentHeader.Housebill,
 
-    originFacility: shipper.FK_ShipOrderNo ?? "", // TODO check with kiran
+    // originFacility: shipper.FK_ShipOrderNo ?? "", // TODO check with kiran
+    originFacility: "", // TODO check with kiran
     originAddress: shipper.ShipAddress1 ?? "",
     originCity: shipper.ShipCity ?? "",
     originState: shipper.FK_ShipState ?? "",
     originZip: shipper.ShipZip ?? "",
 
-    destinationFacility: consignee?.FK_ConOrderNo ?? "", // TODO check with kiran
+    // destinationFacility: consignee?.FK_ConOrderNo ?? "", // TODO check with kiran
+    destinationFacility: "", // TODO check with kiran
     destinationAddress: consignee?.ConAddress1 ?? "",
     destinationCity: consignee?.ConCity ?? "",
     destinationState: consignee?.FK_ConState ?? "",
