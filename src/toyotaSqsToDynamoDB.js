@@ -467,6 +467,7 @@ function getDiff(dataList, obj) {
   );
   delete latestObj["SeqNo"];
   delete latestObj["InsertedTimeStamp"];
+  delete latestObj["payload"];
   delete obj["InsertedTimeStamp"];
 
   return {
@@ -507,10 +508,8 @@ function timeSwap(startTime, endTime) {
     return endTime;
   }
 }
-// 4932014
 
 function replaceTime(date) {
-  // const originalDate = "2023-03-22 05:30:00.000";
   let originalDate = date;
   const convertedDate = originalDate.replace(" ", "T");
   return convertedDate;
