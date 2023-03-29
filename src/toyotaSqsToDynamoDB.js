@@ -114,6 +114,8 @@ module.exports.handler = async (event, context, callback) => {
               loadId: toyotaObj.loadId,
             });
             let SeqNo = 1;
+            let rawPaylaod = JSON.parse(JSON.stringify(toyotaObj));
+            delete rawPaylaod.InsertedTimeStamp;
             if (getToyotaData.Items && getToyotaData.Items.length > 0) {
               const { latestObj, isDiff } = getDiff([...getToyotaData.Items], {
                 ...toyotaObj,
@@ -123,7 +125,7 @@ module.exports.handler = async (event, context, callback) => {
                 await putItem(TOYOTA_DDB, {
                   ...toyotaObj,
                   SeqNo: SeqNo.toString(),
-                  payload: JSON.stringify([toyotaObj]),
+                  payload: JSON.stringify([rawPaylaod]),
                 });
 
                 //update all other records with carrierOrderNo
@@ -146,7 +148,7 @@ module.exports.handler = async (event, context, callback) => {
                       {
                         ...e,
                         carrierOrderNo: toyotaObj.carrierOrderNo,
-                        payload: JSON.stringify([toyotaObj]),
+                        payload: JSON.stringify([rawPaylaod]),
                       }
                     );
                   }
@@ -157,7 +159,7 @@ module.exports.handler = async (event, context, callback) => {
               await putItem(TOYOTA_DDB, {
                 ...toyotaObj,
                 SeqNo: SeqNo.toString(),
-                payload: JSON.stringify([toyotaObj]),
+                payload: JSON.stringify([rawPaylaod]),
               });
             }
           }
@@ -341,7 +343,7 @@ function mapToyotaData(dataSet, eventDesc) {
     originZip: shipper.ShipZip ?? "",
 
     // destinationFacility: consignee?.FK_ConOrderNo ?? "", // TODO check with kiran
-    destinationFacility: "", // TODO check with kiran
+    destinationFacility: "PHOENIX PDC",
     destinationAddress: consignee?.ConAddress1 ?? "",
     destinationCity: consignee?.ConCity ?? "",
     destinationState: consignee?.FK_ConState ?? "",
@@ -350,15 +352,18 @@ function mapToyotaData(dataSet, eventDesc) {
     // event: shipmentMilestone?.FK_OrderStatusId ?? "",
     event: eventDesc,
 
-    eventtimestamp: shipmentMilestone?.EventDateTime ?? "",
+    eventtimestamp: replaceTime(shipmentMilestone?.EventDateTime) ?? "",
     timeZone: shipmentMilestone?.EventTimeZone ?? "",
 
     eta: shipmentHeader.ETADateTime,
-    appointmentStartTime: replaceTime(shipmentHeader.ScheduledDateTime),
-    appointmentEndTime: replaceTime(appointmentEndTimeValue), //2023-03-22 00:00:00.000
+    appointmentStartTime: replaceTime(shipmentHeader.ScheduledDateTime) ?? "",
+    appointmentEndTime: replaceTime(appointmentEndTimeValue) ?? "", //2023-03-22 00:00:00.000
 
-    reasoncode: reasonCodeDetails?.reasonCode ?? "",
-    reasondescription: reasonCodeDetails?.reasonDescription ?? "",
+    // reasoncode: reasonCodeDetails?.reasonCode ?? "", //NS
+    // reasondescription: reasonCodeDetails?.reasonDescription ?? "", //Normal Status
+
+    reasoncode: "NS",
+    reasondescription: "Normal Status",
 
     gpslat: "",
     gpslong: "",
