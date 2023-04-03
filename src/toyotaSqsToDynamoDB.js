@@ -28,6 +28,7 @@ module.exports.handler = async (event, context, callback) => {
   let sqsEventRecords = [];
   try {
     updateLog("toyotaSqsToDynamoDB:handler:event", event);
+    console.info("Event from Source", event)
     sqsEventRecords = event.Records;
     const faildSqsItemList = [];
 
@@ -335,21 +336,17 @@ function mapToyotaData(dataSet, eventDesc) {
     containerNo: referencesTRL?.ReferenceNo ?? "", //  tbl_references.FK_RefTypeId == "TRL"
     billOfLading: shipmentHeader.Housebill,
 
-    // originFacility: shipper.FK_ShipOrderNo ?? "", // TODO check with kiran
     originFacility: "", // TODO check with kiran
     originAddress: shipper.ShipAddress1 ?? "",
     originCity: shipper.ShipCity ?? "",
     originState: shipper.FK_ShipState ?? "",
     originZip: shipper.ShipZip ?? "",
 
-    // destinationFacility: consignee?.FK_ConOrderNo ?? "", // TODO check with kiran
     destinationFacility: "PHOENIX PDC",
     destinationAddress: consignee?.ConAddress1 ?? "",
     destinationCity: consignee?.ConCity ?? "",
     destinationState: consignee?.FK_ConState ?? "",
     destinationZip: consignee?.ConZip ?? "",
-
-    // event: shipmentMilestone?.FK_OrderStatusId ?? "",
     event: eventDesc,
 
     eventtimestamp: replaceTime(shipmentMilestone?.EventDateTime) ?? "",
@@ -362,8 +359,8 @@ function mapToyotaData(dataSet, eventDesc) {
     // reasoncode: reasonCodeDetails?.reasonCode ?? "", //NS
     // reasondescription: reasonCodeDetails?.reasonDescription ?? "", //Normal Status
 
-    reasoncode: "NS",
-    reasondescription: "Normal Status",
+    reasoncode: "NS", //hardocde
+    reasondescription: "Normal Status",//hardcode
 
     gpslat: "",
     gpslong: "",
@@ -420,8 +417,8 @@ function getEventdesc(shipmentHeader, shipmentMilestone, eventTable) {
     return shipmentMilestone?.FK_OrderStatusId &&
       shipmentMilestone.FK_OrderStatusId.length > 0
       ? dataMap?.[shipmentMilestone.FK_OrderStatusId] ?? [
-          shipmentMilestone.FK_OrderStatusId,
-        ]
+        shipmentMilestone.FK_OrderStatusId,
+      ]
       : [""];
   } else if (eventTable === SHIPMENT_HEADER_TABLE) {
     /**
