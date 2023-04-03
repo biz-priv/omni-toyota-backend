@@ -322,7 +322,7 @@ function mapToyotaData(dataSet, eventDesc) {
     )
   );
 
-  const reasonCodeDetails = getToyotaResonCodeDetails(aparFailure?.FDCode);
+  // const reasonCodeDetails = getToyotaResonCodeDetails(aparFailure?.FDCode);
 
   const appointmentEndTimeValue = timeSwap(
     shipmentHeader.ScheduledDateTime,
