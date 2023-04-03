@@ -309,7 +309,7 @@ function mapToyotaData(dataSet, eventDesc) {
   const consignee = dataSet.consignee.length > 0 ? dataSet.consignee[0] : {};
   const shipper = dataSet.shipper.length > 0 ? dataSet.shipper[0] : {};
 
-  const aparFailure = getLatestObjByTimeStamp(dataSet.aparFailure);
+  // const aparFailure = getLatestObjByTimeStamp(dataSet.aparFailure); not being used - uncomment later when needed
 
   const shipmentMilestone = getLatestObjByTimeStamp(dataSet.shipmentMilestone);
 
@@ -322,7 +322,7 @@ function mapToyotaData(dataSet, eventDesc) {
     )
   );
 
-  // const reasonCodeDetails = getToyotaResonCodeDetails(aparFailure?.FDCode);
+  // const reasonCodeDetails = getToyotaResonCodeDetails(aparFailure?.FDCode); not being used - uncomment later when needed
 
   const appointmentEndTimeValue = timeSwap(
     shipmentHeader.ScheduledDateTime,
@@ -356,8 +356,8 @@ function mapToyotaData(dataSet, eventDesc) {
     appointmentStartTime: replaceTime(shipmentHeader.ScheduledDateTime) ?? "",
     appointmentEndTime: replaceTime(appointmentEndTimeValue) ?? "", //2023-03-22 00:00:00.000
 
-    // reasoncode: reasonCodeDetails?.reasonCode ?? "", //NS
-    // reasondescription: reasonCodeDetails?.reasonDescription ?? "", //Normal Status
+    // reasoncode: reasonCodeDetails?.reasonCode ?? "", //not being used - uncomment later when needed
+    // reasondescription: reasonCodeDetails?.reasonDescription ?? "", //not being used - uncomment later when needed
 
     reasoncode: "NS", //hardocde
     reasondescription: "Normal Status",//hardcode
