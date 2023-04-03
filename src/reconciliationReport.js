@@ -202,7 +202,7 @@ function getDate() {
       .toString(),
     INTFC_TO_TMSTMP: moment
       .tz("America/Chicago")
-      .subtract(1, "days")
+      // .subtract(1, "days")
       .format("YYYY-MM-DD HH:mm:ss")
       .toString(),
     INTFC_FROM_TMSTMP: moment
@@ -211,7 +211,7 @@ function getDate() {
       .toString(),
     ConciliationTimeStamp: moment
       .tz("America/Chicago")
-      .subtract(1, "days")
+      // .subtract(1, "days")
       .format("YYYYMMDD")
       .toString(),
   };
