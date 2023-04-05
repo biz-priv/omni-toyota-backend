@@ -325,16 +325,18 @@ async function mapToyotaData(dataSet, eventDesc) {
   );
 
   const etaTime =
-    shipmentHeader.ETADateTime == "NULL" ||
-    shipmentHeader.ETADateTime == undefined
-      ? false
-      : shipmentHeader.ETADateTime;
+    shipmentHeader?.ETADateTime &&
+    shipmentHeader.ETADateTime.length > 0 &&
+    shipmentHeader.ETADateTime != "NULL"
+      ? shipmentHeader.ETADateTime
+      : false;
 
   const etaTimezone =
-    shipmentHeader.ETADateTimeZone == "NULL" ||
-    shipmentHeader.ETADateTimeZone == undefined
-      ? "CST"
-      : shipmentHeader.ETADateTimeZone;
+    shipmentHeader?.ETADateTimeZone &&
+    shipmentHeader.ETADateTimeZone.length > 0 &&
+    shipmentHeader.ETADateTimeZone != "NULL"
+      ? shipmentHeader.ETADateTimeZone
+      : "CST";
   // return {};
   // const reasonCodeDetails = getToyotaResonCodeDetails(aparFailure?.FDCode); not being used - uncomment later when needed
 
