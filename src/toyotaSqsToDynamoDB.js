@@ -8,6 +8,7 @@ const {
   updateItem,
 } = require("./shared/dynamo");
 const { updateLog } = require("./shared/logHelper");
+const { getUTCTime } = require("./shared/offsetHelper");
 const { getToyotaResonCodeDetails } = require("./shared/toyotaMapping");
 // const { v4: uuidv4 } = require("uuid");
 
@@ -28,7 +29,7 @@ module.exports.handler = async (event, context, callback) => {
   let sqsEventRecords = [];
   try {
     updateLog("toyotaSqsToDynamoDB:handler:event", event);
-    console.info("Event from Source", event)
+    console.info("Event from Source", event);
     sqsEventRecords = event.Records;
     const faildSqsItemList = [];
 
@@ -92,8 +93,9 @@ module.exports.handler = async (event, context, callback) => {
             const eventDesc = eventData[index];
 
             //prepare the payload
-            const toyotaObj = mapToyotaData(dataSet, eventDesc);
+            const toyotaObj = await mapToyotaData(dataSet, eventDesc);
             console.log("toyotaObj", toyotaObj);
+            // return {};
             if (
               toyotaObj.billOfLading == 0 ||
               toyotaObj.billOfLading == "" ||
@@ -301,7 +303,7 @@ async function fetchDataFromTables(tableList, primaryKeyValue) {
  * @param {*} dataSet
  * @returns
  */
-function mapToyotaData(dataSet, eventDesc) {
+async function mapToyotaData(dataSet, eventDesc) {
   // shipmentHeader,consignee,shipper always have one value
 
   const shipmentHeader =
@@ -322,11 +324,33 @@ function mapToyotaData(dataSet, eventDesc) {
     )
   );
 
+  const etaTime =
+    shipmentHeader.ETADateTime == "NULL" ||
+    shipmentHeader.ETADateTime == undefined
+      ? false
+      : shipmentHeader.ETADateTime;
+
+  const etaTimezone =
+    shipmentHeader.ETADateTimeZone == "NULL" ||
+    shipmentHeader.ETADateTimeZone == undefined
+      ? "CST"
+      : shipmentHeader.ETADateTimeZone;
+  // return {};
   // const reasonCodeDetails = getToyotaResonCodeDetails(aparFailure?.FDCode); not being used - uncomment later when needed
 
-  const appointmentEndTimeValue = timeSwap(
-    shipmentHeader.ScheduledDateTime,
-    shipmentHeader.ScheduledDateTimeRange
+  const eventtimestamp = await getUTCTime(
+    shipmentMilestone?.EventDateTime,
+    shipmentMilestone?.EventTimeZone
+  );
+
+  const appointmentStartTime = await addUtcOffsetStartTime(
+    eventDesc,
+    shipmentHeader
+  );
+
+  let appointmentEndTimeValue = await addUtcOffsetEndTime(
+    eventDesc,
+    shipmentHeader
   );
 
   const toyotaPayload = {
@@ -349,23 +373,23 @@ function mapToyotaData(dataSet, eventDesc) {
     destinationZip: consignee?.ConZip ?? "",
     event: eventDesc,
 
-    eventtimestamp: replaceTime(shipmentMilestone?.EventDateTime) ?? "",
+    eventtimestamp: eventtimestamp ?? "",
     timeZone: shipmentMilestone?.EventTimeZone ?? "",
 
-    eta: shipmentHeader.ETADateTime,
-    appointmentStartTime: replaceTime(shipmentHeader.ScheduledDateTime) ?? "",
-    appointmentEndTime: replaceTime(appointmentEndTimeValue) ?? "", //2023-03-22 00:00:00.000
+    eta: etaTime ? await getUTCTime(etaTime, etaTimezone) : "",
+    appointmentStartTime: appointmentStartTime ?? "",
+    appointmentEndTime: appointmentEndTimeValue ?? "", //2023-03-22 00:00:00.000
 
     // reasoncode: reasonCodeDetails?.reasonCode ?? "", //not being used - uncomment later when needed
     // reasondescription: reasonCodeDetails?.reasonDescription ?? "", //not being used - uncomment later when needed
 
     reasoncode: "NS", //hardocde
-    reasondescription: "Normal Status",//hardcode
+    reasondescription: "Normal Status", //hardcode
 
-    gpslat: "",
-    gpslong: "",
-    transportationMode: "",
-    sequenceNumber: "",
+    gpslat: "0",
+    gpslong: "0",
+    transportationMode: "OTR", //hardcode
+    sequenceNumber: shipmentHeader.Housebill ?? "",
 
     InsertedTimeStamp: moment
       .tz("America/Chicago")
@@ -417,8 +441,8 @@ function getEventdesc(shipmentHeader, shipmentMilestone, eventTable) {
     return shipmentMilestone?.FK_OrderStatusId &&
       shipmentMilestone.FK_OrderStatusId.length > 0
       ? dataMap?.[shipmentMilestone.FK_OrderStatusId] ?? [
-        shipmentMilestone.FK_OrderStatusId,
-      ]
+          shipmentMilestone.FK_OrderStatusId,
+        ]
       : [""];
   } else if (eventTable === SHIPMENT_HEADER_TABLE) {
     /**
@@ -517,4 +541,49 @@ function replaceTime(date) {
   let originalDate = date;
   const convertedDate = originalDate.replace(" ", "T");
   return convertedDate;
+}
+
+async function addUtcOffsetStartTime(event, shipmentData) {
+  let offSetTime = "";
+  if (event == "Delivery Appointment") {
+    //APD
+    offSetTime = await getUTCTime(
+      shipmentData.ScheduledDateTime,
+      shipmentData.ScheduledDateTimeZone ?? "CST"
+    );
+  } else if (event == "Pick Up Appointment") {
+    //APP
+    offSetTime = await getUTCTime(
+      shipmentData.ReadyDateTime,
+      shipmentData.ReadyDateTimeZone ?? "CST"
+    );
+  } else {
+    offSetTime = "";
+  }
+  return offSetTime;
+}
+
+async function addUtcOffsetEndTime(event, shipmentData) {
+  let appointmentEndTimeValue = timeSwap(
+    shipmentData.ScheduledDateTime,
+    shipmentData.ScheduledDateTimeRange
+  );
+
+  let offSetTime = "";
+  if (event == "Delivery Appointment") {
+    //APD
+    offSetTime = await getUTCTime(
+      appointmentEndTimeValue,
+      shipmentData.scheduleDateTimeZone ?? "CST"
+    );
+  } else if (event == "Pick Up Appointment") {
+    //APP
+    offSetTime = await getUTCTime(
+      shipmentData.ReadyDateTimeRange,
+      shipmentData.ReadyDateTimeZone ?? "CST"
+    );
+  } else {
+    offSetTime = "";
+  }
+  return offSetTime;
 }

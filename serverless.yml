@@ -46,6 +46,7 @@ provider:
     SERVICE: ${self:service}
     REGION: ${self:custom.region}
     STAGE: ${self:custom.stage}
+    TIMEZONE_MASTER: ${ssm:/omni-wt-rt-updates/${self:provider.stage}/timezone-master/ddb.tableName~true}
   deploymentBucket:
     name: ${ssm:/omni-dw/${self:provider.stage}/sls/deployment/bucket}
     serverSideEncryption: AES256
