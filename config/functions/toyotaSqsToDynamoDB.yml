@@ -15,9 +15,7 @@ function:
       - "src/shared/**"
   logSubscription: true
   environment:
-    APAR_FAILURE_TABLE: ${ssm:/omni-wt-rt-updates/${self:provider.stage}/apar-failure/ddb.tableName~true}
     CONSIGNEE_TABLE: ${ssm:/omni-wt-rt-updates/${self:provider.stage}/consignee/ddb.tableName~true}
-    SHIPMENT_APAR_TABLE: ${ssm:/omni-wt-rt-updates/${self:provider.stage}/shipment-apar/ddb.tableName~true}
     SHIPMENT_HEADER_TABLE: ${ssm:/omni-wt-rt-updates/${self:provider.stage}/shipment-header/ddb.tableName~true}
     SHIPMENT_MILESTONE_TABLE: ${ssm:/omni-wt-rt-updates/${self:provider.stage}/shipment-milestone/ddb.tableName~true}
     SHIPPER_TABLE: ${ssm:/omni-wt-rt-updates/${self:provider.stage}/shipper/ddb.tableName~true}

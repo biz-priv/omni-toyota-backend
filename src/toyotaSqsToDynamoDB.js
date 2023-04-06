@@ -13,10 +13,8 @@ const { getToyotaResonCodeDetails } = require("./shared/toyotaMapping");
 // const { v4: uuidv4 } = require("uuid");
 
 const {
-  APAR_FAILURE_TABLE,
   CONSIGNEE_TABLE,
   REFERENCES_TABLE,
-  SHIPMENT_APAR_TABLE,
   SHIPMENT_HEADER_TABLE,
   SHIPMENT_MILESTONE_TABLE,
   SHIPPER_TABLE,
@@ -199,12 +197,12 @@ function getTablesAndPrimaryKey(tableName, dynamoData) {
         sortName: "shipmentHeader",
         type: "PRIMARY_KEY",
       },
-      [APAR_FAILURE_TABLE]: {
-        PK: "FK_OrderNo",
-        SK: "FK_SeqNo",
-        sortName: "aparFailure",
-        type: "PRIMARY_KEY",
-      },
+      // [APAR_FAILURE_TABLE]: {
+      //   PK: "FK_OrderNo",
+      //   SK: "FK_SeqNo",
+      //   sortName: "aparFailure",
+      //   type: "PRIMARY_KEY",
+      // },
       [CONSIGNEE_TABLE]: {
         PK: "FK_ConOrderNo",
         SK: "",
@@ -219,12 +217,12 @@ function getTablesAndPrimaryKey(tableName, dynamoData) {
         indexKeyName: REFERENCES_INDEX_KEY_NAME,
         type: "INDEX",
       },
-      [SHIPMENT_APAR_TABLE]: {
-        PK: "FK_OrderNo",
-        SK: "SeqNo",
-        sortName: "shipmentApar",
-        type: "PRIMARY_KEY",
-      },
+      // [SHIPMENT_APAR_TABLE]: {
+      //   PK: "FK_OrderNo",
+      //   SK: "SeqNo",
+      //   sortName: "shipmentApar",
+      //   type: "PRIMARY_KEY",
+      // },
 
       [SHIPMENT_MILESTONE_TABLE]: {
         PK: "FK_OrderNo",
