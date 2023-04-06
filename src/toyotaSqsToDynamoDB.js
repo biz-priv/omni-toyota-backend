@@ -31,6 +31,7 @@ module.exports.handler = async (event, context, callback) => {
     updateLog("toyotaSqsToDynamoDB:handler:event", event);
     console.info("Event from Source", event);
     sqsEventRecords = event.Records;
+    // sqsEventRecords = [{}];
     const faildSqsItemList = [];
 
     for (let index = 0; index < sqsEventRecords.length; index++) {
@@ -518,33 +519,6 @@ function sortObjKeys(mainObj) {
     }, {});
 }
 
-/**
- * if ScheduledDateTimeRange from shipmentHeader contain 00:00 changing that to ScheduledDateTime time value
- * @param {*} startTime
- * @param {*} endTime
- * @returns
- */
-function timeSwap(startTime, endTime) {
-  let timeS = startTime;
-  timeS = timeS.slice(-12);
-
-  let timeE = endTime;
-  timeE = timeE.slice(-12);
-
-  if (timeE == "00:00:00.000") {
-    let newString = endTime.replace("00:00:00.000", timeS);
-    return newString;
-  } else {
-    return endTime;
-  }
-}
-
-function replaceTime(date) {
-  let originalDate = date;
-  const convertedDate = originalDate.replace(" ", "T");
-  return convertedDate;
-}
-
 async function addUtcOffsetStartTime(event, shipmentData) {
   let offSetTime = "";
   if (event == "Delivery Appointment") {
@@ -566,16 +540,11 @@ async function addUtcOffsetStartTime(event, shipmentData) {
 }
 
 async function addUtcOffsetEndTime(event, shipmentData) {
-  let appointmentEndTimeValue = timeSwap(
-    shipmentData.ScheduledDateTime,
-    shipmentData.ScheduledDateTimeRange
-  );
-
   let offSetTime = "";
   if (event == "Delivery Appointment") {
     //APD
     offSetTime = await getUTCTime(
-      appointmentEndTimeValue,
+      shipmentData.ScheduledDateTime,
       shipmentData.scheduleDateTimeZone ?? "CST"
     );
   } else if (event == "Pick Up Appointment") {
