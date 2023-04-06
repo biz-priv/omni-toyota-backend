@@ -1,5 +1,5 @@
 const moment = require("moment-timezone");
-const { prepareBatchFailureObj } = require("./shared/dataHelper");
+const { prepareBatchFailureObj, setDelay } = require("./shared/dataHelper");
 const {
   getItem,
   queryWithPartitionKey,
@@ -31,6 +31,10 @@ module.exports.handler = async (event, context, callback) => {
     sqsEventRecords = event.Records;
     // sqsEventRecords = [{}];
     const faildSqsItemList = [];
+    /**
+     * added 45 sec delay
+     */
+    await setDelay(45);
 
     for (let index = 0; index < sqsEventRecords.length; index++) {
       const sqsItem = sqsEventRecords[index];

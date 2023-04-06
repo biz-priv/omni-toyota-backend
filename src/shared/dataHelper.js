@@ -9,4 +9,18 @@ function prepareBatchFailureObj(data) {
   return { batchItemFailures };
 }
 
-module.exports = { prepareBatchFailureObj };
+/**
+ * creates delay of {sec}
+ * @param {*} sec
+ * @returns
+ */
+function setDelay(sec) {
+  console.log("delay started");
+  return new Promise(async (resolve, reject) => {
+    setTimeout(() => {
+      console.log("delay end");
+      resolve(true);
+    }, sec * 1000);
+  });
+}
+module.exports = { prepareBatchFailureObj, setDelay };
