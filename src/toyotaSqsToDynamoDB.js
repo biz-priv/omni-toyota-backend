@@ -68,10 +68,13 @@ module.exports.handler = async (event, context, callback) => {
           const shipmentHeader =
             dataSet.shipmentHeader.length > 0 ? dataSet.shipmentHeader[0] : {};
 
-          const shipmentMilestone = getLatestObjByTimeStamp(
-            dataSet.shipmentMilestone
+          const shipmentMilestone = getMilestoneDataObj(
+            dataSet.shipmentMilestone,
+            dynamoData
           );
 
+          console.log("shipmentMilestone", shipmentMilestone);
+          // return {};
           console.log(
             "shipmentHeader.ReadyDateTime",
             shipmentHeader.ReadyDateTime
@@ -96,7 +99,11 @@ module.exports.handler = async (event, context, callback) => {
             const eventDesc = eventData[index];
 
             //prepare the payload
-            const toyotaObj = await mapToyotaData(dataSet, eventDesc);
+            const toyotaObj = await mapToyotaData(
+              dataSet,
+              eventDesc,
+              dynamoData
+            );
             console.log("toyotaObj", toyotaObj);
             // return {};
             if (
@@ -306,7 +313,7 @@ async function fetchDataFromTables(tableList, primaryKeyValue) {
  * @param {*} dataSet
  * @returns
  */
-async function mapToyotaData(dataSet, eventDesc) {
+async function mapToyotaData(dataSet, eventDesc, dynamoData) {
   // shipmentHeader,consignee,shipper always have one value
 
   const shipmentHeader =
@@ -316,7 +323,12 @@ async function mapToyotaData(dataSet, eventDesc) {
 
   // const aparFailure = getLatestObjByTimeStamp(dataSet.aparFailure); not being used - uncomment later when needed
 
-  const shipmentMilestone = getLatestObjByTimeStamp(dataSet.shipmentMilestone);
+  // const shipmentMilestone = getLatestObjByTimeStamp(dataSet.shipmentMilestone);
+
+  const shipmentMilestone = getMilestoneDataObj(
+    dataSet.shipmentMilestone,
+    dynamoData
+  );
 
   const referencesTRL = getLatestObjByTimeStamp(
     dataSet.references.filter((e) => e.FK_RefTypeId == "TRL")
@@ -425,6 +437,11 @@ async function mapToyotaData(dataSet, eventDesc) {
  *    that starts with '1900-01-01', this should be ignored and not sent to Toyota
  */
 function getEventdesc(shipmentHeader, shipmentMilestone, eventTable) {
+  console.log(
+    "shipmentMilestone?.FK_OrderStatusId",
+    shipmentMilestone?.FK_OrderStatusId
+  );
+
   console.log(
     eventTable === SHIPMENT_MILESTONE_TABLE,
     eventTable,
@@ -559,4 +576,17 @@ async function addUtcOffsetEndTime(event, shipmentData) {
     offSetTime = "";
   }
   return offSetTime;
+}
+
+function getMilestoneDataObj(mileStonedata, dynamoData) {
+  if (mileStonedata.length > 0) {
+    const milestoneDataObj = mileStonedata.find(
+      (item) => item.FK_OrderStatusId == dynamoData.Keys.FK_OrderStatusId.S
+    );
+    console.log("milestoneDataObj===>", milestoneDataObj);
+
+    return milestoneDataObj;
+  } else {
+    return {};
+  }
 }
