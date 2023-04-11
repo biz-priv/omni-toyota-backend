@@ -341,15 +341,15 @@ async function mapToyotaData(dataSet, eventDesc, dynamoData) {
 
   const etaTime =
     shipmentHeader?.ETADateTime &&
-    shipmentHeader.ETADateTime.length > 0 &&
-    shipmentHeader.ETADateTime != "NULL"
+      shipmentHeader.ETADateTime.length > 0 &&
+      shipmentHeader.ETADateTime != "NULL"
       ? shipmentHeader.ETADateTime
       : false;
 
   const etaTimezone =
     shipmentHeader?.ETADateTimeZone &&
-    shipmentHeader.ETADateTimeZone.length > 0 &&
-    shipmentHeader.ETADateTimeZone != "NULL"
+      shipmentHeader.ETADateTimeZone.length > 0 &&
+      shipmentHeader.ETADateTimeZone != "NULL"
       ? shipmentHeader.ETADateTimeZone
       : "CST";
   // return {};
@@ -406,7 +406,7 @@ async function mapToyotaData(dataSet, eventDesc, dynamoData) {
     gpslat: "0",
     gpslong: "0",
     transportationMode: "OTR", //hardcode
-    sequenceNumber: shipmentHeader.Housebill ?? "",
+    // sequenceNumber: shipmentHeader.Housebill ?? "", not required for now - commenting for later use
 
     InsertedTimeStamp: moment
       .tz("America/Chicago")
@@ -463,8 +463,8 @@ function getEventdesc(shipmentHeader, shipmentMilestone, eventTable) {
     return shipmentMilestone?.FK_OrderStatusId &&
       shipmentMilestone.FK_OrderStatusId.length > 0
       ? dataMap?.[shipmentMilestone.FK_OrderStatusId] ?? [
-          shipmentMilestone.FK_OrderStatusId,
-        ]
+        shipmentMilestone.FK_OrderStatusId,
+      ]
       : [""];
   } else if (eventTable === SHIPMENT_HEADER_TABLE) {
     /**
