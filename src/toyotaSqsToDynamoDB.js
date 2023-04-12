@@ -316,6 +316,9 @@ async function fetchDataFromTables(tableList, primaryKeyValue) {
 async function mapToyotaData(dataSet, eventDesc, dynamoData) {
   // shipmentHeader,consignee,shipper always have one value
 
+  const hasMilestone = dynamoData.dynamoTableName.includes("milestone");
+  console.log("hasMilestone", hasMilestone);
+
   const shipmentHeader =
     dataSet.shipmentHeader.length > 0 ? dataSet.shipmentHeader[0] : {};
   const consignee = dataSet.consignee.length > 0 ? dataSet.consignee[0] : {};
@@ -323,12 +326,16 @@ async function mapToyotaData(dataSet, eventDesc, dynamoData) {
 
   // const aparFailure = getLatestObjByTimeStamp(dataSet.aparFailure); not being used - uncomment later when needed
 
-  // const shipmentMilestone = getLatestObjByTimeStamp(dataSet.shipmentMilestone);
+  const shipmentMilestone = hasMilestone
+    ? getMilestoneDataObj(dataSet.shipmentMilestone, dynamoData)
+    : getLatestObjByTimeStamp(dataSet.shipmentMilestone);
 
-  const shipmentMilestone = getMilestoneDataObj(
-    dataSet.shipmentMilestone,
-    dynamoData
-  );
+  // const shipmentMilestone = getLatestObjByTimeStamp(dataSet.shipmentMilestone)
+
+  // const shipmentMilestone = getMilestoneDataObj(
+  //   dataSet.shipmentMilestone,
+  //   dynamoData
+  // );
 
   const referencesTRL = getLatestObjByTimeStamp(
     dataSet.references.filter((e) => e.FK_RefTypeId == "TRL")
@@ -341,15 +348,15 @@ async function mapToyotaData(dataSet, eventDesc, dynamoData) {
 
   const etaTime =
     shipmentHeader?.ETADateTime &&
-      shipmentHeader.ETADateTime.length > 0 &&
-      shipmentHeader.ETADateTime != "NULL"
+    shipmentHeader.ETADateTime.length > 0 &&
+    shipmentHeader.ETADateTime != "NULL"
       ? shipmentHeader.ETADateTime
       : false;
 
   const etaTimezone =
     shipmentHeader?.ETADateTimeZone &&
-      shipmentHeader.ETADateTimeZone.length > 0 &&
-      shipmentHeader.ETADateTimeZone != "NULL"
+    shipmentHeader.ETADateTimeZone.length > 0 &&
+    shipmentHeader.ETADateTimeZone != "NULL"
       ? shipmentHeader.ETADateTimeZone
       : "CST";
   // return {};
@@ -463,8 +470,8 @@ function getEventdesc(shipmentHeader, shipmentMilestone, eventTable) {
     return shipmentMilestone?.FK_OrderStatusId &&
       shipmentMilestone.FK_OrderStatusId.length > 0
       ? dataMap?.[shipmentMilestone.FK_OrderStatusId] ?? [
-        shipmentMilestone.FK_OrderStatusId,
-      ]
+          shipmentMilestone.FK_OrderStatusId,
+        ]
       : [""];
   } else if (eventTable === SHIPMENT_HEADER_TABLE) {
     /**
@@ -579,14 +586,26 @@ async function addUtcOffsetEndTime(event, shipmentData) {
 }
 
 function getMilestoneDataObj(mileStonedata, dynamoData) {
-  if (mileStonedata.length > 0) {
-    const milestoneDataObj = mileStonedata.find(
-      (item) => item.FK_OrderStatusId == dynamoData.Keys.FK_OrderStatusId.S
-    );
+  let milestoneDataObj = {};
+
+  console.log("mileStonedata", mileStonedata);
+  console.log("dynamoData", dynamoData.dynamoTableName);
+
+  const hasMilestone = dynamoData.dynamoTableName.includes("milestone");
+  const hasHeader = dynamoData.dynamoTableName.includes("header");
+
+  if (hasMilestone) {
+    console.log(hasMilestone);
+    if (mileStonedata.length > 0) {
+      milestoneDataObj = mileStonedata.find(
+        (item) => item.FK_OrderStatusId == dynamoData.Keys.FK_OrderStatusId.S
+      );
+    }
+
     console.log("milestoneDataObj===>", milestoneDataObj);
 
     return milestoneDataObj;
   } else {
-    return {};
+    return milestoneDataObj;
   }
 }
