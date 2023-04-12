@@ -566,11 +566,16 @@ async function addUtcOffsetStartTime(event, shipmentData) {
 }
 
 async function addUtcOffsetEndTime(event, shipmentData) {
+  let appointmentEndTimeValue = timeSwap(
+    shipmentData.ScheduledDateTime,
+    shipmentData.ScheduledDateTimeRange
+  );
+
   let offSetTime = "";
   if (event == "Delivery Appointment") {
     //APD
     offSetTime = await getUTCTime(
-      shipmentData.ScheduledDateTimeRange,
+      appointmentEndTimeValue,
       shipmentData.ScheduledDateTimeZone ?? "CST"
     );
   } else if (event == "Pick Up Appointment") {
@@ -607,5 +612,20 @@ function getMilestoneDataObj(mileStonedata, dynamoData) {
     return milestoneDataObj;
   } else {
     return milestoneDataObj;
+  }
+}
+
+function timeSwap(startTime, endTime) {
+  let timeS = startTime;
+  timeS = timeS.slice(-12);
+
+  let timeE = endTime;
+  timeE = timeE.slice(-12);
+
+  if (timeE == "00:00:00.000") {
+    let newString = endTime.replace("00:00:00.000", timeS);
+    return newString;
+  } else {
+    return endTime;
   }
 }
