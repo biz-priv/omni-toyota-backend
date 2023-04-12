@@ -570,7 +570,7 @@ async function addUtcOffsetEndTime(event, shipmentData) {
   if (event == "Delivery Appointment") {
     //APD
     offSetTime = await getUTCTime(
-      shipmentData.ScheduledDateTime,
+      shipmentData.ScheduledDateTimeRange,
       shipmentData.ScheduledDateTimeZone ?? "CST"
     );
   } else if (event == "Pick Up Appointment") {
