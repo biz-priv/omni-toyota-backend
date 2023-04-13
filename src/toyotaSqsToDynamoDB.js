@@ -443,8 +443,8 @@ async function mapToyotaData(dataSet, eventDesc, dynamoData) {
     gpslat: "0",
     gpslong: "0",
     transportationMode: "OTR", //hardcode
-    // sequenceNumber: shipmentHeader.Housebill ?? "", not required for now - commenting for later use
-
+    sequenceNumber: shipmentHeader.Housebill ?? "",
+    // not required for now - commenting for later use
     InsertedTimeStamp: moment
       .tz("America/Chicago")
       .format("YYYY:MM:DD HH:mm:ss")
