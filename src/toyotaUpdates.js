@@ -19,7 +19,7 @@ module.exports.handler = async (event, context, callback) => {
       try {
         const streamRecordsRaw = AWS.DynamoDB.Converter.unmarshall(NewImage);
         //check if carrierOrderNo have proper value or not
-        if (streamRecords.carrierOrderNo.length === 0) {
+        if (streamRecordsRaw.carrierOrderNo.length === 0) {
           return {};
         }
         const streamRecords = [Object.assign({}, streamRecordsRaw)];
