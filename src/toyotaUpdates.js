@@ -23,7 +23,7 @@ module.exports.handler = async (event, context, callback) => {
         if (streamRecordsRaw.carrierOrderNo.length === 0) {
           return {};
         }
-        const streamRecords = [Object.assign({}, streamRecordsRaw)];
+        const streamRecords = Object.assign({}, streamRecordsRaw);
         const payload = JSON.parse(streamRecords.payload);
 
         console.log("payload", payload);
