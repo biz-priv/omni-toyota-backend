@@ -97,6 +97,7 @@ module.exports.handler = async (event, context, callback) => {
 
           for (let index = 0; index < eventData.length; index++) {
             const eventDesc = eventData[index];
+            console.info("eventDesc", eventDesc)
 
             //prepare the payload
             let toyotaObj = await mapToyotaData(dataSet, eventDesc, dynamoData);
@@ -378,15 +379,15 @@ async function mapToyotaData(dataSet, eventDesc, dynamoData) {
 
   const etaTime =
     shipmentHeader?.ETADateTime &&
-    shipmentHeader.ETADateTime.length > 0 &&
-    shipmentHeader.ETADateTime != "NULL"
+      shipmentHeader.ETADateTime.length > 0 &&
+      shipmentHeader.ETADateTime != "NULL"
       ? shipmentHeader.ETADateTime
       : false;
 
   const etaTimezone =
     shipmentHeader?.ETADateTimeZone &&
-    shipmentHeader.ETADateTimeZone.length > 0 &&
-    shipmentHeader.ETADateTimeZone != "NULL"
+      shipmentHeader.ETADateTimeZone.length > 0 &&
+      shipmentHeader.ETADateTimeZone != "NULL"
       ? shipmentHeader.ETADateTimeZone
       : "CST";
   // return {};
@@ -500,8 +501,8 @@ function getEventdesc(shipmentHeader, shipmentMilestone, eventTable) {
     return shipmentMilestone?.FK_OrderStatusId &&
       shipmentMilestone.FK_OrderStatusId.length > 0
       ? dataMap?.[shipmentMilestone.FK_OrderStatusId] ?? [
-          shipmentMilestone.FK_OrderStatusId,
-        ]
+        shipmentMilestone.FK_OrderStatusId,
+      ]
       : [""];
   } else if (eventTable === SHIPMENT_HEADER_TABLE) {
     /**
