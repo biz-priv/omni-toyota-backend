@@ -18,12 +18,13 @@ module.exports.handler = async (event, context, callback) => {
       const NewImage = event.Records[index].dynamodb.NewImage;
       try {
         const streamRecordsRaw = AWS.DynamoDB.Converter.unmarshall(NewImage);
+        console.log("streamRecordsRaw", streamRecordsRaw);
         //check if carrierOrderNo have proper value or not
         if (streamRecordsRaw.carrierOrderNo.length === 0) {
           return {};
         }
         const streamRecords = [Object.assign({}, streamRecordsRaw)];
-        const payload = streamRecords.payload;
+        const payload = JSON.parse(streamRecords.payload);
 
         console.log("payload", payload);
         let toyotaRes = [];
