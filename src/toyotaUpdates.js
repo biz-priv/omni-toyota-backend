@@ -11,7 +11,7 @@ const TOYOTA_RESPONSE_DDB = process.env.TOYOTA_RESPONSE_DDB;
 
 module.exports.handler = async (event, context, callback) => {
   try {
-    console.info("Event", event)
+    console.info("Event", event);
     updateLog("toyotaUpdates:handler:event", event);
     // processing all the array of records
     for (let index = 0; index < event.Records.length; index++) {
@@ -22,18 +22,24 @@ module.exports.handler = async (event, context, callback) => {
         if (streamRecords.carrierOrderNo.length === 0) {
           return {};
         }
-        const payload = [Object.assign({}, streamRecords)];
-        delete payload[0].InsertedTimeStamp;
-        delete payload[0].SeqNo;
+        const payload = [Object.assign({}, streamRecords.payload)];
+
+        console.log("payload", payload);
+        let toyotaRes = [];
+        for (let index = 0; index < payload.length; index++) {
+          const element = payload[index];
+          const toyotaResData = await sendToyotaUpdate([element]);
+          toyotaRes = [...toyotaRes, toyotaResData];
+        }
         // send payload to toyota
-        const toyotaRes = await sendToyotaUpdate(payload);
         const dateTime = moment.tz("America/Chicago");
         const resPayload = {
           ...streamRecords,
-          ...toyotaRes,
+          toyotaRes: JSON.stringify(toyotaRes),
           InsertedTimeStamp: dateTime.format("YYYY:MM:DD HH:mm:ss").toString(),
           ConciliationTimeStamp: dateTime.format("YYYYMMDD").toString(),
         };
+        console.log("resPayload", resPayload);
         // save toyota response
         await putItem(TOYOTA_RESPONSE_DDB, resPayload);
       } catch (error) {

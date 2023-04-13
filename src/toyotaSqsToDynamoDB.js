@@ -83,7 +83,7 @@ module.exports.handler = async (event, context, callback) => {
           if (
             dynamoData.dynamoTableName === SHIPMENT_HEADER_TABLE &&
             (shipmentHeader.ReadyDateTime.startsWith("19") ||
-              shipmentHeader.ETADateTime.startsWith("19"))
+              shipmentHeader.ScheduledDateTime.startsWith("19"))
           ) {
             continue;
           }
@@ -99,20 +99,37 @@ module.exports.handler = async (event, context, callback) => {
             const eventDesc = eventData[index];
 
             //prepare the payload
-            const toyotaObj = await mapToyotaData(
-              dataSet,
-              eventDesc,
-              dynamoData
-            );
-            console.log("toyotaObj", toyotaObj);
-            // return {};
+            let toyotaObj = await mapToyotaData(dataSet, eventDesc, dynamoData);
+
             if (
-              toyotaObj.billOfLading == 0 ||
-              toyotaObj.billOfLading == "" ||
-              toyotaObj.containerNo == 0 ||
-              toyotaObj.containerNo == "" ||
-              toyotaObj.eventtimestamp == 0 ||
-              toyotaObj.eventtimestamp == ""
+              shipmentHeader.ScheduledDateTime != "" &&
+              shipmentHeader.ReadyDateTime != ""
+            ) {
+              const event =
+                toyotaObj.event == "Delivery Appointment"
+                  ? "Pick Up Appointment"
+                  : "Delivery Appointment";
+
+              const secondToyotaObj = {
+                ...toyotaObj,
+                event: event,
+              };
+              toyotaObj = [toyotaObj, secondToyotaObj];
+            } else {
+              toyotaObj = [toyotaObj];
+            }
+
+            console.log("toyotaObj", toyotaObj);
+
+            // return {};
+
+            if (
+              toyotaObj[0].billOfLading == 0 ||
+              toyotaObj[0].billOfLading == "" ||
+              toyotaObj[0].containerNo == 0 ||
+              toyotaObj[0].containerNo == "" ||
+              toyotaObj[0].eventtimestamp == 0 ||
+              toyotaObj[0].eventtimestamp == ""
             ) {
               return `Missing require fileds eventtimestamp or billOfLading or containerNo`;
             }
@@ -124,27 +141,39 @@ module.exports.handler = async (event, context, callback) => {
              * if carrierOrderNo is empty for previous records then update that also.
              */
             const getToyotaData = await queryWithPartitionKey(TOYOTA_DDB, {
-              loadId: toyotaObj.loadId,
+              loadId: toyotaObj[0].loadId,
             });
             let SeqNo = 1;
             let rawPaylaod = JSON.parse(JSON.stringify(toyotaObj));
-            delete rawPaylaod.InsertedTimeStamp;
+            console.log("rawPaylaod", rawPaylaod);
+            if (rawPaylaod.length == 2) {
+              delete rawPaylaod[0].InsertedTimeStamp;
+              delete rawPaylaod[1].InsertedTimeStamp;
+            } else {
+              delete rawPaylaod[0].InsertedTimeStamp;
+            }
+
+            // console.log("getToyotaData", getToyotaData);
+
             if (getToyotaData.Items && getToyotaData.Items.length > 0) {
-              const { latestObj, isDiff } = getDiff([...getToyotaData.Items], {
-                ...toyotaObj,
-              });
+              const { latestObj, isDiff } = getDiff(
+                [...getToyotaData.Items],
+                rawPaylaod
+              );
+              console.log("isDiff", isDiff);
+              // return {};
               if (isDiff) {
                 SeqNo += getToyotaData.Items.length;
                 await putItem(TOYOTA_DDB, {
-                  ...toyotaObj,
+                  ...toyotaObj[0],
                   SeqNo: SeqNo.toString(),
-                  payload: JSON.stringify([rawPaylaod]),
+                  payload: JSON.stringify(rawPaylaod),
                 });
 
                 //update all other records with carrierOrderNo
                 if (
                   latestObj.carrierOrderNo.length === 0 &&
-                  toyotaObj.carrierOrderNo.length > 0
+                  toyotaObj[0].carrierOrderNo.length > 0
                 ) {
                   for (
                     let index = 0;
@@ -160,19 +189,20 @@ module.exports.handler = async (event, context, callback) => {
                       },
                       {
                         ...e,
-                        carrierOrderNo: toyotaObj.carrierOrderNo,
-                        payload: JSON.stringify([rawPaylaod]),
+                        carrierOrderNo: toyotaObj[0].carrierOrderNo,
+                        payload: JSON.stringify(rawPaylaod),
                       }
                     );
                   }
                 }
               }
             } else {
+              // return {};
               //save to dynamo DB
               await putItem(TOYOTA_DDB, {
-                ...toyotaObj,
+                ...toyotaObj[0],
                 SeqNo: SeqNo.toString(),
-                payload: JSON.stringify([rawPaylaod]),
+                payload: JSON.stringify(rawPaylaod),
               });
             }
           }
@@ -459,9 +489,9 @@ function getEventdesc(shipmentHeader, shipmentMilestone, eventTable) {
     AAD: ["Arrive Delivery Location"],
     DEL: ["Completed Unloading"],
     COB: ["In Transit"],
-    APP: ["Pick Up Appointment"],
+    // APP: ["Pick Up Appointment"],
     PUP: ["Depart Pickup Location"],
-    APD: ["Delivery Appointment"],
+    // APD: ["Delivery Appointment"],
   };
   if (eventTable === SHIPMENT_MILESTONE_TABLE) {
     /**
@@ -481,7 +511,10 @@ function getEventdesc(shipmentHeader, shipmentMilestone, eventTable) {
     if (shipmentHeader.ReadyDateTime != "") {
       event = ["Pick Up Appointment"];
     }
-    if (shipmentHeader.ETADateTime != "") {
+    // if (shipmentHeader.ETADateTime != "") {
+    //   event = ["Delivery Appointment"];
+    // }
+    if (shipmentHeader.ScheduledDateTime != "") {
       event = ["Delivery Appointment"];
     }
     return event;
@@ -518,21 +551,21 @@ function getLatestObjByTimeStamp(data) {
  * @returns
  */
 function getDiff(dataList, obj) {
+  console.log("dataList", dataList);
+  console.log("obj", obj);
+
   let latestObj = Object.assign(
     {},
     dataList.sort((a, b) => b.SeqNo - a.SeqNo)[0]
   );
-  delete latestObj["SeqNo"];
-  delete latestObj["InsertedTimeStamp"];
-  delete latestObj["payload"];
-  delete obj["InsertedTimeStamp"];
+
+  //latest object ta nichis jeta last add hoeyche
+
+  console.log("latestObj===>", latestObj);
 
   return {
     latestObj,
-    isDiff: !(
-      JSON.stringify(sortObjKeys(latestObj)) ===
-      JSON.stringify(sortObjKeys(obj))
-    ),
+    isDiff: latestObj.payload === JSON.stringify(obj),
   };
 }
 
