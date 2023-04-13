@@ -17,12 +17,13 @@ module.exports.handler = async (event, context, callback) => {
     for (let index = 0; index < event.Records.length; index++) {
       const NewImage = event.Records[index].dynamodb.NewImage;
       try {
-        const streamRecords = AWS.DynamoDB.Converter.unmarshall(NewImage);
+        const streamRecordsRaw = AWS.DynamoDB.Converter.unmarshall(NewImage);
         //check if carrierOrderNo have proper value or not
         if (streamRecords.carrierOrderNo.length === 0) {
           return {};
         }
-        const payload = [Object.assign({}, streamRecords.payload)];
+        const streamRecords = [Object.assign({}, streamRecordsRaw)];
+        const payload = streamRecords.payload;
 
         console.log("payload", payload);
         let toyotaRes = [];
@@ -31,6 +32,8 @@ module.exports.handler = async (event, context, callback) => {
           const toyotaResData = await sendToyotaUpdate([element]);
           toyotaRes = [...toyotaRes, toyotaResData];
         }
+
+        console.log("toyotaRes", toyotaRes);
         // send payload to toyota
         const dateTime = moment.tz("America/Chicago");
         const resPayload = {
