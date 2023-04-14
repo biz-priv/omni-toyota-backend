@@ -97,7 +97,7 @@ module.exports.handler = async (event, context, callback) => {
 
           for (let index = 0; index < eventData.length; index++) {
             const eventDesc = eventData[index];
-            console.info("eventDesc", eventDesc)
+            console.info("eventDesc", eventDesc);
 
             //prepare the payload
             let toyotaObj = await mapToyotaData(dataSet, eventDesc, dynamoData);
@@ -111,10 +111,11 @@ module.exports.handler = async (event, context, callback) => {
                   ? "Pick Up Appointment"
                   : "Delivery Appointment";
 
-              const secondToyotaObj = {
-                ...toyotaObj,
-                event: event,
-              };
+              const secondToyotaObj = await mapToyotaData(
+                dataSet,
+                event,
+                dynamoData
+              );
               toyotaObj = [toyotaObj, secondToyotaObj];
             } else {
               toyotaObj = [toyotaObj];
@@ -379,15 +380,15 @@ async function mapToyotaData(dataSet, eventDesc, dynamoData) {
 
   const etaTime =
     shipmentHeader?.ETADateTime &&
-      shipmentHeader.ETADateTime.length > 0 &&
-      shipmentHeader.ETADateTime != "NULL"
+    shipmentHeader.ETADateTime.length > 0 &&
+    shipmentHeader.ETADateTime != "NULL"
       ? shipmentHeader.ETADateTime
       : false;
 
   const etaTimezone =
     shipmentHeader?.ETADateTimeZone &&
-      shipmentHeader.ETADateTimeZone.length > 0 &&
-      shipmentHeader.ETADateTimeZone != "NULL"
+    shipmentHeader.ETADateTimeZone.length > 0 &&
+    shipmentHeader.ETADateTimeZone != "NULL"
       ? shipmentHeader.ETADateTimeZone
       : "CST";
   // return {};
@@ -490,9 +491,7 @@ function getEventdesc(shipmentHeader, shipmentMilestone, eventTable) {
     AAD: ["Arrive Delivery Location"],
     DEL: ["Completed Unloading"],
     COB: ["In Transit"],
-    // APP: ["Pick Up Appointment"],
     PUP: ["Depart Pickup Location"],
-    // APD: ["Delivery Appointment"],
   };
   if (eventTable === SHIPMENT_MILESTONE_TABLE) {
     /**
@@ -501,21 +500,24 @@ function getEventdesc(shipmentHeader, shipmentMilestone, eventTable) {
     return shipmentMilestone?.FK_OrderStatusId &&
       shipmentMilestone.FK_OrderStatusId.length > 0
       ? dataMap?.[shipmentMilestone.FK_OrderStatusId] ?? [
-        shipmentMilestone.FK_OrderStatusId,
-      ]
+          shipmentMilestone.FK_OrderStatusId,
+        ]
       : [""];
   } else if (eventTable === SHIPMENT_HEADER_TABLE) {
     /**
      * change evant code to desc based on shipmentHeader
      */
     let event = "";
-    if (shipmentHeader.ReadyDateTime != "") {
+    if (
+      shipmentHeader.ReadyDateTime != "" &&
+      shipmentHeader.ReadyDateTimeRange != ""
+    ) {
       event = ["Pick Up Appointment"];
     }
-    // if (shipmentHeader.ETADateTime != "") {
-    //   event = ["Delivery Appointment"];
-    // }
-    if (shipmentHeader.ScheduledDateTime != "") {
+    if (
+      shipmentHeader.ScheduledDateTime != "" &&
+      shipmentHeader.ScheduledDateTimeRange != ""
+    ) {
       event = ["Delivery Appointment"];
     }
     return event;
@@ -582,13 +584,11 @@ function sortObjKeys(mainObj) {
 async function addUtcOffsetStartTime(event, shipmentData) {
   let offSetTime = "";
   if (event == "Delivery Appointment") {
-    //APD
     offSetTime = await getUTCTime(
       shipmentData.ScheduledDateTime,
       shipmentData.ScheduledDateTimeZone ?? "CST"
     );
   } else if (event == "Pick Up Appointment") {
-    //APP
     offSetTime = await getUTCTime(
       shipmentData.ReadyDateTime,
       shipmentData.ReadyDateTimeZone ?? "CST"
@@ -607,13 +607,11 @@ async function addUtcOffsetEndTime(event, shipmentData) {
 
   let offSetTime = "";
   if (event == "Delivery Appointment") {
-    //APD
     offSetTime = await getUTCTime(
       appointmentEndTimeValue,
       shipmentData.ScheduledDateTimeZone ?? "CST"
     );
   } else if (event == "Pick Up Appointment") {
-    //APP
     offSetTime = await getUTCTime(
       shipmentData.ReadyDateTimeRange,
       shipmentData.ReadyDateTimeZone ?? "CST"
