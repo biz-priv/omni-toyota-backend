@@ -404,7 +404,7 @@ async function mapToyotaData(dataSet, eventDesc, dynamoData) {
     shipmentHeader
   );
 
-  let appointmentEndTimeValue = await addUtcOffsetEndTime(
+  const appointmentEndTimeValue = await addUtcOffsetEndTime(
     eventDesc,
     shipmentHeader
   );
@@ -568,7 +568,7 @@ function getDiff(dataList, obj) {
 
   return {
     latestObj,
-    isDiff: latestObj.payload === JSON.stringify(obj),
+    isDiff: !(latestObj.payload === JSON.stringify(obj)),
   };
 }
 
