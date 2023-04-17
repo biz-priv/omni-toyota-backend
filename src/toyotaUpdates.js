@@ -31,7 +31,15 @@ module.exports.handler = async (event, context, callback) => {
         for (let index = 0; index < payload.length; index++) {
           const element = payload[index];
           const toyotaResData = await sendToyotaUpdate([element]);
-          toyotaRes = [...toyotaRes, toyotaResData];
+          toyotaRes = [
+            ...toyotaRes,
+            {
+              loadId: element.loadId,
+              SeqNo: streamRecords.SeqNo,
+              event: element.event,
+              ...toyotaResData,
+            },
+          ];
         }
 
         console.log("toyotaRes", toyotaRes);
