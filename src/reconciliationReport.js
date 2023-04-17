@@ -88,6 +88,13 @@ function getAllDataFromToyota(dateList) {
  * @returns
  */
 function createPayload(data, dateList) {
+  let count = 0;
+  for (let index = 0; index < data.length; index++) {
+    const element = data[index];
+    const toyotaRes = JSON.parse(element.toyotaRes);
+    count += toyotaRes.filter((e) => e.status == "success").length;
+  }
+  console.log("count", count);
   return {
     TABLE_NAME: "MACH",
     DEPOT_CD: "",
@@ -98,7 +105,7 @@ function createPayload(data, dateList) {
     INTFC_DTE: dateList.INTFC_DTE, //req //current date
     INTFC_TO_TMSTMP: dateList.INTFC_TO_TMSTMP,
     INTFC_FROM_TMSTMP: dateList.INTFC_FROM_TMSTMP,
-    TOT_REC_CNT: data.map((e) => e.status == "success").length.toString(),
+    TOT_REC_CNT: count.toString(),
     CREATE_TMSTMP: dateList.CREATE_TMSTMP, //current time
     TIME_ZONE: "CST", //hardcode
   };
