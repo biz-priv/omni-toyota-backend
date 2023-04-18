@@ -11,7 +11,7 @@ function:
       - "src/shared/**"
   events:
     - schedule:
-        rate: cron(0 6 * * ? *) # CST:- 12:00 AM IST:- 11:30 pm
+        rate: cron(0 1 * * ? *) # CST:- 08:00 PM ,  IST:- 6:30 am
   logSubscription: true
   environment:
     TOYOTA_DDB: ${ssm:/omni-rt-toyota/${self:provider.stage}/ddb.tableName~true}
