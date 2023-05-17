@@ -1,0 +1,20 @@
+---
+function:
+  name: omni-toyota-updates-${self:provider.stage}
+  handler: src/toyotaUpdates.handler
+  layers:
+    - { Ref: OmniToyotaLayerLambdaLayer }
+  package:
+    patterns:
+      - "!**/*"
+      - "src/toyotaUpdates.js"
+      - "src/shared/**"
+  logSubscription: true
+  # events:
+  #   - stream: ${ssm:/omni-rt-toyota/${self:provider.stage}/ddb.streamArn~true}
+  environment:
+    TOYOTA_DDB: ${ssm:/omni-rt-toyota/${self:provider.stage}/ddb.tableName~true}
+    TOYOTA_CLIENT_ID: ${ssm:/omni-rt-toyota/${self:provider.stage}/authApi.clientId~true}
+    TOYOTA_JWT_URL: ${ssm:/omni-rt-toyota/${self:provider.stage}/authApi.url~true}
+    TOYOTA_URL: ${ssm:/omni-rt-toyota/${self:provider.stage}/toyotaApi.url~true}
+    TOYOTA_RESPONSE_DDB: ${ssm:/omni-rt-toyota/${self:provider.stage}/response/ddb.tableName~true}

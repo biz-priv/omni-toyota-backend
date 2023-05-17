@@ -1,0 +1,28 @@
+---
+function:
+  name: omni-toyota-sqs-to-dynamo-db-${self:provider.stage}
+  handler: src/toyotaSqsToDynamoDB.handler
+  memorySize: 1024
+  timeout: 90
+  layers:
+    - { Ref: OmniToyotaLayerLambdaLayer }
+  package:
+    patterns:
+      - "!**/*"
+      - "src/toyotaSqsToDynamoDB.js"
+      - "src/shared/**"
+  logSubscription: true
+  environment:
+    CONSIGNEE_TABLE: ${ssm:/omni-wt-rt-updates/${self:provider.stage}/consignee/ddb.tableName~true}
+    SHIPMENT_HEADER_TABLE: ${ssm:/omni-wt-rt-updates/${self:provider.stage}/shipment-header/ddb.tableName~true}
+    SHIPMENT_MILESTONE_TABLE: ${ssm:/omni-wt-rt-updates/${self:provider.stage}/shipment-milestone/ddb.tableName~true}
+    SHIPPER_TABLE: ${ssm:/omni-wt-rt-updates/${self:provider.stage}/shipper/ddb.tableName~true}
+    REFERENCES_TABLE: ${ssm:/omni-wt-rt-updates/${self:provider.stage}/references/ddb.tableName~true}
+    REFERENCES_INDEX_KEY_NAME: ${ssm:/omni-wt-rt-updates/${self:provider.stage}/references/ddb.orderNoIndex}
+    TOYOTA_DDB: ${ssm:/omni-rt-toyota/${self:provider.stage}/ddb.tableName~true}
+    TOYOTA_BILL_NO: ${ssm:/omni-wt-rt-updates/${self:provider.stage}/toyota/shipmentHeader/filterBillNo~true} #"22531"
+  events:
+    - sqs:
+        arn: ${ssm:/omni-wt-rt-updates/${self:provider.stage}/toyota/sqs.arn~true}
+        batchSize: 10
+        functionResponseType: ReportBatchItemFailures
