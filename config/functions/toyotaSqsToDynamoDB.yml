@@ -4,8 +4,6 @@ function:
   handler: src/toyotaSqsToDynamoDB.handler
   memorySize: 1024
   timeout: 90
-  # provisionedConcurrency: 5
-  # concurrencyAutoscaling: true
   layers:
     - { Ref: OmniToyotaLayerLambdaLayer }
   package:
