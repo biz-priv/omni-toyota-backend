@@ -10,8 +10,8 @@ function:
       - "src/toyotaUpdates.js"
       - "src/shared/**"
   logSubscription: true
-  # events:
-  #   - stream: ${ssm:/omni-rt-toyota/${self:provider.stage}/ddb.streamArn~true}
+  events:
+    - stream: ${ssm:/omni-rt-toyota/${self:provider.stage}/ddb.streamArn~true}
   environment:
     TOYOTA_DDB: ${ssm:/omni-rt-toyota/${self:provider.stage}/ddb.tableName~true}
     TOYOTA_CLIENT_ID: ${ssm:/omni-rt-toyota/${self:provider.stage}/authApi.clientId~true}
