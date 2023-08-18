@@ -68,7 +68,6 @@ custom:
 
 plugins:
   - serverless-offline
-  - serverless-provisioned-concurrency-autoscaling
   - serverless-plugin-log-subscription
 
 package:

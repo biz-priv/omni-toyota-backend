@@ -8,3 +8,4 @@ lambdaLayer/lib/nodejs/yarn.lock
 doc.txt
 test.js
 lambdaLayer/lib/nodejs/package-lock.json
+package-lock.json
