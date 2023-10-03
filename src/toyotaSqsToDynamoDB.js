@@ -13,6 +13,7 @@ const { getToyotaResonCodeDetails } = require("./shared/toyotaMapping");
 const AWS = require("aws-sdk");
 const dynamo = new AWS.DynamoDB();
 const { v4: uuidv4 } = require("uuid");
+const get = require("lodash.get");
 
 const {
   CONSIGNEE_TABLE,
@@ -412,8 +413,8 @@ async function mapToyotaData(dataSet, eventDesc, dynamoData) {
     shipmentHeader
   );
 
-  shipmentdatetimes = shipmentHeader.ShipmentDateTime
-  PK_OrderNo = shipmentHeader.PK_OrderNo
+  shipmentdatetimes = get(shipmentHeader,"ShipmentDateTime","")
+  PK_OrderNo = get(shipmentHeader,"PK_OrderNo","")  
   const loadIdValue = await getloadId(shipmentdatetimes, PK_OrderNo);
   const toyotaPayload = {
     loadId: loadIdValue ?? "",
@@ -669,47 +670,49 @@ function timeSwap(startTime, endTime) {
 }
 
 async function getloadId(shipmentdatetime, PK_OrderNo) {
-  const shipmentDate = moment(shipmentdatetime, 'YYYY-MM-DD HH:mm:ss.SSS');
-  const formattedDate = shipmentDate.format('YYYYMMDD');
-  const getshipmentdates = await query(LAST_SHIPMENT_DATE, 'ShipmentDate-index', formattedDate);
+  try {
+    const shipmentDate = moment(shipmentdatetime, 'YYYY-MM-DD HH:mm:ss.SSS');
+    const formattedDate = shipmentDate.format('YYYYMMDD');
+    const getshipmentdates = await query(LAST_SHIPMENT_DATE, 'ShipmentDate-index', formattedDate);
 
-  let rowNumber;
+    let rowNumber = "01";
 
-  if (getshipmentdates.length > 0) {
-    let maxOrdinal = 0;
+    if (getshipmentdates.length > 0) {
+      let maxOrdinal = 0;
 
-    for (const item of getshipmentdates) {
-      const ordinal = parseInt(item.ordinalNumber.S);
-      if (!isNaN(ordinal) && ordinal > maxOrdinal) {
-        maxOrdinal = ordinal;
+      for (const item of getshipmentdates) {
+        const ordinal = parseInt(get(item, 'ordinalNumber.S', '0'));
+        if (!isNaN(ordinal) && ordinal > maxOrdinal) {
+          maxOrdinal = ordinal;
+        }
+      }
+
+      rowNumber = String(maxOrdinal + 1).padStart(2, '0');
+
+      const filteredItems = getshipmentdates.filter(item => get(item, 'PK_OrderNo.S', '') === PK_OrderNo);
+      if (filteredItems.length !== 0) {
+        rowNumber = get(filteredItems[0], 'ordinalNumber.S', '01');
       }
     }
-    rowNumber = String(maxOrdinal + 1).padStart(2, '0');
 
-    const filteredItems = getshipmentdates.filter(item => item.PK_OrderNo.S === PK_OrderNo);
-    if (filteredItems.length !== 0) {
-      rowNumber = filteredItems[0].ordinalNumber.S
-    }
+    const result = `PX-${rowNumber}-${formattedDate}`;
+
+    const lastPK_OrderNo = PK_OrderNo;
+    await putItem(LAST_SHIPMENT_DATE, {
+      Id: uuidv4(),
+      PK_OrderNo: lastPK_OrderNo,
+      ShipmentDate: formattedDate,
+      ordinalNumber: rowNumber,
+      loadId: result
+    });
+
+    console.info(result);
+    return result;
+  } catch (error) {
+    console.error("Error in getloadId function:", error);
+    throw error;
   }
-  else {
-    rowNumber = "01"
-  }
-
-  const result = `PX-${rowNumber}-${formattedDate}`;
-
-  const lastPK_OrderNo = PK_OrderNo;
-  await putItem(LAST_SHIPMENT_DATE, {
-    Id: uuidv4(),
-    PK_OrderNo: lastPK_OrderNo,
-    ShipmentDate: formattedDate,
-    ordinalNumber: rowNumber,
-    loadId: result
-  });
-
-  console.info(result);
-  return result;
 }
-
 
 async function query(tableName, indexName, shipmentDate) {
   const params = {
