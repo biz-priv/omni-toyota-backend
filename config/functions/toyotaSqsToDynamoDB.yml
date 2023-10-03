@@ -23,6 +23,7 @@ function:
     REFERENCES_INDEX_KEY_NAME: ${ssm:/omni-wt-rt-updates/${self:provider.stage}/references/ddb.orderNoIndex}
     TOYOTA_DDB: ${ssm:/omni-rt-toyota/${self:provider.stage}/ddb.tableName~true}
     TOYOTA_BILL_NO: ${ssm:/omni-wt-rt-updates/${self:provider.stage}/toyota/shipmentHeader/filterBillNo~true} #"22531"
+    LAST_SHIPMENT_DATE: ${ssm:/omni-rt-toyota/${self:provider.stage}/lastShipmentDate/ddb.tableName~true}
   events:
     - sqs:
         arn: ${ssm:/omni-wt-rt-updates/${self:provider.stage}/toyota/sqs.arn~true}

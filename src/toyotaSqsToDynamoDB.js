@@ -10,7 +10,9 @@ const {
 const { updateLog } = require("./shared/logHelper");
 const { getUTCTime } = require("./shared/offsetHelper");
 const { getToyotaResonCodeDetails } = require("./shared/toyotaMapping");
-// const { v4: uuidv4 } = require("uuid");
+const AWS = require("aws-sdk");
+const dynamo = new AWS.DynamoDB();
+const { v4: uuidv4 } = require("uuid");
 
 const {
   CONSIGNEE_TABLE,
@@ -21,6 +23,7 @@ const {
   REFERENCES_INDEX_KEY_NAME,
   TOYOTA_DDB,
   TOYOTA_BILL_NO, //dev:- "23190", prod:- "23032"
+  LAST_SHIPMENT_DATE,
 } = process.env;
 
 module.exports.handler = async (event, context, callback) => {
@@ -409,8 +412,11 @@ async function mapToyotaData(dataSet, eventDesc, dynamoData) {
     shipmentHeader
   );
 
+  shipmentdatetimes = shipmentHeader.ShipmentDateTime
+  PK_OrderNo = shipmentHeader.PK_OrderNo
+  const loadIdValue = await getloadId(shipmentdatetimes, PK_OrderNo);
   const toyotaPayload = {
-    loadId: shipmentHeader.PK_OrderNo,
+    loadId: loadIdValue ?? "",
     scac: "OMNG", //hardcode
     carrierOrderNo: referencesLOA?.ReferenceNo ?? "", //{required field to send to toyota} tbl_references.FK_RefTypeId == "LOA" && tbl_references.CustomerType == "B"
     containerNo: referencesTRL?.ReferenceNo ?? "", //  tbl_references.FK_RefTypeId == "TRL"
@@ -659,5 +665,68 @@ function timeSwap(startTime, endTime) {
     return newString;
   } else {
     return endTime;
+  }
+}
+
+async function getloadId(shipmentdatetime, PK_OrderNo) {
+  const shipmentDate = moment(shipmentdatetime, 'YYYY-MM-DD HH:mm:ss.SSS');
+  const formattedDate = shipmentDate.format('YYYYMMDD');
+  const getshipmentdates = await query(LAST_SHIPMENT_DATE, 'ShipmentDate-index', formattedDate);
+
+  let rowNumber;
+
+  if (getshipmentdates.length > 0) {
+    let maxOrdinal = 0;
+
+    for (const item of getshipmentdates) {
+      const ordinal = parseInt(item.ordinalNumber.S);
+      if (!isNaN(ordinal) && ordinal > maxOrdinal) {
+        maxOrdinal = ordinal;
+      }
+    }
+    rowNumber = String(maxOrdinal + 1).padStart(2, '0');
+
+    const filteredItems = getshipmentdates.filter(item => item.PK_OrderNo.S === PK_OrderNo);
+    if (filteredItems.length !== 0) {
+      rowNumber = filteredItems[0].ordinalNumber.S
+    }
+  }
+  else {
+    rowNumber = "01"
+  }
+
+  const result = `PX-${rowNumber}-${formattedDate}`;
+
+  const lastPK_OrderNo = PK_OrderNo;
+  await putItem(LAST_SHIPMENT_DATE, {
+    Id: uuidv4(),
+    PK_OrderNo: lastPK_OrderNo,
+    ShipmentDate: formattedDate,
+    ordinalNumber: rowNumber,
+    loadId: result
+  });
+
+  console.info(result);
+  return result;
+}
+
+
+async function query(tableName, indexName, shipmentDate) {
+  const params = {
+    TableName: tableName,
+    IndexName: indexName,
+    KeyConditionExpression: "ShipmentDate = :value",
+    ExpressionAttributeValues: {
+      ":value": { S: shipmentDate },
+    },
+  };
+  console.log("params:", params);
+
+  try {
+    const data = await dynamo.query(params).promise();
+    return data.Items;
+  } catch (error) {
+    console.error("Query Error:", error);
+    throw error;
   }
 }
