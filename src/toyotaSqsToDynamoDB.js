@@ -413,8 +413,8 @@ async function mapToyotaData(dataSet, eventDesc, dynamoData) {
     shipmentHeader
   );
 
-  shipmentdatetimes = get(shipmentHeader,"ShipmentDateTime","")
-  PK_OrderNo = get(shipmentHeader,"PK_OrderNo","")  
+  const shipmentdatetimes = get(shipmentHeader,"ShipmentDateTime","")
+  const PK_OrderNo = get(shipmentHeader,"PK_OrderNo","")  
   const loadIdValue = await getloadId(shipmentdatetimes, PK_OrderNo);
   const toyotaPayload = {
     loadId: loadIdValue ?? "",
