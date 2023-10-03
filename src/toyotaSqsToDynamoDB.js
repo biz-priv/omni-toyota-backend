@@ -691,7 +691,7 @@ async function getloadId(shipmentdatetime, PK_OrderNo) {
 
       const filteredItems = getshipmentdates.filter(item => get(item, 'PK_OrderNo.S', '') === PK_OrderNo);
       if (filteredItems.length !== 0) {
-        rowNumber = get(filteredItems[0], 'ordinalNumber.S', '01');
+        rowNumber = get(filteredItems, '[0].ordinalNumber.S', '01');
       }
     }
 
