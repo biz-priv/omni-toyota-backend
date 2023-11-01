@@ -497,7 +497,7 @@ function getEventdesc(shipmentHeader, shipmentMilestone, eventTable) {
     TTC: ["Completed Loading"],
     AAD: ["Arrive Delivery Location"],
     DEL: ["Completed Unloading"],
-    COB: ["In Transit"],
+    COB: ["In transit"],
     PUP: ["Depart Pickup Location"],
   };
   if (eventTable === SHIPMENT_MILESTONE_TABLE) {
