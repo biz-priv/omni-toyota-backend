@@ -1,3 +1,10 @@
+/*
+* File: src\shared\dynamo.jsV
+* Project: Omni-toyota-backend
+* Author: Bizcloud Experts
+* Date: 2022-12-02
+* Confidential and Proprietary
+*/
 const AWS = require("aws-sdk");
 const get = require("lodash.get");
 var dynamodb = new AWS.DynamoDB.DocumentClient();

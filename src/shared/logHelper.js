@@ -1,3 +1,10 @@
+/*
+* File: src\shared\logHelper.js
+* Project: Omni-toyota-backend
+* Author: Bizcloud Experts
+* Date: 2023-01-25
+* Confidential and Proprietary
+*/
 const log4js = require("log4js");
 const moment = require("moment");
 function updateLog(functionName, message = "", status = "INFO") {

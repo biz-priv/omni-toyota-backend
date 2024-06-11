@@ -1,3 +1,10 @@
+/*
+* File: src\shared\toyotaMapping.js
+* Project: Omni-toyota-backend
+* Author: Bizcloud Experts
+* Date: 2022-12-05
+* Confidential and Proprietary
+*/
 function getToyotaResonCodeDetails(FDCode) {
   try {
     return toyotaResonCodeMapping[toyotaMappingData[FDCode].toyotaCode];

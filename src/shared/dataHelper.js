@@ -1,3 +1,10 @@
+/*
+* File: src\shared\dataHelper.js
+* Project: Omni-toyota-backend
+* Author: Bizcloud Experts
+* Date: 2023-04-06
+* Confidential and Proprietary
+*/
 function prepareBatchFailureObj(data) {
   const batchItemFailures =
     data.length > 0

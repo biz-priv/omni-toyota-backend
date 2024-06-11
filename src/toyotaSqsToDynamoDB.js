@@ -1,3 +1,10 @@
+/*
+* File: src\toyotaSqsToDynamoDB.js
+* Project: Omni-toyota-backend
+* Author: Bizcloud Experts
+* Date: 2023-11-01
+* Confidential and Proprietary
+*/
 const moment = require("moment-timezone");
 const { prepareBatchFailureObj, setDelay } = require("./shared/dataHelper");
 const {

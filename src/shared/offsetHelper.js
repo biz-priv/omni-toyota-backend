@@ -1,3 +1,10 @@
+/*
+* File: src\shared\offsetHelper.js
+* Project: Omni-toyota-backend
+* Author: Bizcloud Experts
+* Date: 2023-04-05
+* Confidential and Proprietary
+*/
 const AWS = require("aws-sdk");
 const ddb = new AWS.DynamoDB.DocumentClient({
   region: process.env.REGION,
