@@ -2,6 +2,8 @@
 function:
   name: omni-toyota-updates-${self:provider.stage}
   handler: src/toyotaUpdates.handler
+  tags:
+    Name: updates
   layers:
     - { Ref: OmniToyotaLayerLambdaLayer }
   package:

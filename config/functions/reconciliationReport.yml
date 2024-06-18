@@ -2,6 +2,8 @@
 function:
   name: omni-toyota-reconciliation-report-${self:provider.stage}
   handler: src/reconciliationReport.handler
+  tags:
+    Name: reconciliation-report
   layers:
     - { Ref: OmniToyotaLayerLambdaLayer }
   package:
